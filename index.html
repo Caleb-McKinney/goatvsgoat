@@ -1,0 +1,2225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b10">
+<title>GOAT vs. GOAT — All-Time Basketball 1-on-1</title>
+<style>
+:root{
+ --bg:#080b10;--panel:#111720;--line:#2d3745;--text:#f8fafc;--muted:#aab4c2;
+ --blue:#2563eb;--blue2:#60a5fa;--red:#dc2626;--red2:#f87171;--gold:#f7c64f;
+ --green:#22c55e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{
+ background:
+ radial-gradient(circle at 18% 0%,#15213b 0,transparent 31%),
+ radial-gradient(circle at 88% 4%,#35171b 0,transparent 26%),
+ var(--bg);
+}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+.wrap{width:min(1160px,calc(100% - 30px));margin:auto}
+.landing{min-height:100vh;display:grid;grid-template-rows:64px 1fr 34px}
+nav{border-bottom:1px solid #ffffff10;background:#080b10c9;backdrop-filter:blur(12px)}
+.navin{height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:950;letter-spacing:-.5px}
+.mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--red));
+display:grid;place-items:center;font-size:10px;font-weight:950;box-shadow:0 0 22px #2563eb44}
+.navRight{display:flex;align-items:center;gap:9px}
+.navPlay,.profileBtn{border:0;color:#fff;cursor:pointer;padding:9px 13px;border-radius:9px;font-weight:900;font-size:13px}
+.navPlay{background:var(--blue)}
+.profileBtn{background:#ffffff09;border:1px solid #ffffff17;display:flex;align-items:center;gap:7px}
+.avatar{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#1d4ed8,#991b1b);font-size:10px;font-weight:950}
+.recordMini{font-size:10px;color:#9ba7b6;font-weight:800}
+
+.hero{display:grid;grid-template-columns:1fr .95fr;gap:38px;align-items:center;padding:24px 0}
+.kicker{font-size:11px;letter-spacing:1.35px;text-transform:uppercase;font-weight:950;color:#d5e6ff;display:flex;align-items:center;gap:7px}
+.kdot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px #f7c64f88}
+h1{font-size:clamp(48px,6.5vw,78px);line-height:.91;letter-spacing:-4px;margin:12px 0 14px}
+.grad{background:linear-gradient(90deg,#fff 0,#9bc6ff 48%,#ff9f9f 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:17px;line-height:1.55;color:var(--muted);max-width:650px;margin:0 0 19px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 18px}
+.step{background:#ffffff07;border:1px solid #ffffff12;border-radius:11px;padding:10px 11px}
+.step b{display:block;font-size:12px;margin-bottom:3px}
+.step span{display:block;color:#95a1b0;font-size:11px;line-height:1.35}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.playBtn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--blue);padding:13px 18px;border-radius:10px;font-weight:950;box-shadow:0 10px 28px #2563eb33}
+.rule{font-size:11px;color:#7f8b99}
+
+.preview{background:linear-gradient(180deg,#141a23,#0d1117);border:1px solid #ffffff1b;border-radius:20px;padding:12px;box-shadow:0 25px 70px #0008}
+.topbar{height:31px;background:#0a0e14;border:1px solid #ffffff12;border-bottom:0;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;padding:0 10px;color:#8995a4;font-size:8px;font-weight:900;letter-spacing:.7px}
+.court{height:min(54vh,390px);min-height:300px;position:relative;overflow:hidden;border:1px solid #ffffff12;border-radius:0 0 12px 12px;background:#0c1016}
+.previewSvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.previewFloor{fill:url(#previewWoodStripe)}
+.previewBorder{stroke:#f8f1e5;stroke-width:2.2;fill:none}
+.previewLine{stroke:#f8f1e5;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.previewBackboard{stroke:#f8f1e5;stroke-width:5}
+.previewRim{stroke:#d95732;stroke-width:4;fill:none}
+.player{position:absolute;z-index:6;width:28px;height:28px;border:3px solid #fff;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:7px;font-weight:950}
+.player.you{left:33%;top:61%;background:var(--blue)} .player.cpu{left:58%;top:44%;background:var(--red)}
+.ball{position:absolute;z-index:7;width:10px;height:10px;background:#df792b;border:2px solid #5e3012;border-radius:50%;left:39%;top:59%}
+.timeout{position:absolute;z-index:9;left:12px;bottom:12px;padding:7px 9px;border:2px solid #fff;border-radius:7px;background:#111827e8;font-size:9px;font-weight:950}
+.board{position:absolute;z-index:9;right:12px;bottom:12px;width:182px;background:#07090c;border:3px solid #505966;border-radius:7px;overflow:hidden;box-shadow:0 7px 20px #000b}
+.bhead{display:flex;justify-content:space-between;padding:4px 6px;background:#151a21;color:#aab4c2;font-size:7px;font-weight:900}
+.live{color:var(--gold)} .brow{display:grid;grid-template-columns:1fr 37px;gap:5px;align-items:center;padding:5px 6px;border-top:1px solid #242b35}
+.bname{font-size:9px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bname.you{color:var(--blue2)} .bname.cpu{color:var(--red2)}
+.bscore{font:900 25px/1 "Courier New",monospace;color:#ffb000;text-align:right}
+footer{display:flex;align-items:center;justify-content:center;color:#667281;font-size:9px;text-align:center;padding:0 10px}
+
+/* auth modal */
+.modalBackdrop{position:fixed;inset:0;z-index:100;background:#000a;display:none;align-items:center;justify-content:center;padding:16px}
+.modalBackdrop.show{display:flex}
+.modal{width:min(430px,100%);background:#111720;border:1px solid #ffffff1b;border-radius:18px;padding:20px;box-shadow:0 30px 80px #000b}
+.modalHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+.modalHead h2{font-size:23px;margin:0;letter-spacing:-.7px}
+.closeBtn{background:transparent;border:0;color:#9ba6b4;font-size:24px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.tab{border:1px solid #ffffff14;background:#ffffff07;color:#b6c0cc;border-radius:9px;padding:9px;font-weight:900;cursor:pointer}
+.tab.active{background:#1d4ed8;color:#fff}
+.formGroup{margin-bottom:11px}
+.formGroup label{display:block;color:#9da9b8;font-size:11px;font-weight:800;margin-bottom:5px}
+.formGroup input{width:100%;background:#0a0e14;border:1px solid #ffffff18;color:#fff;border-radius:9px;padding:11px 12px;outline:none}
+.formGroup input:focus{border-color:#3b82f6}
+.formAction{width:100%;border:0;background:var(--blue);color:#fff;border-radius:9px;padding:11px;font-weight:950;cursor:pointer}
+.formMsg{min-height:18px;margin-top:9px;color:#fca5a5;font-size:11px}
+.profileCard{display:none}
+.profileCard.show{display:block}
+.profileHero{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.profileAvatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#1d4ed8,#991b1b);font-size:17px;font-weight:950}
+.profileName{font-size:20px;font-weight:950}
+.recordGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.recordBox{background:#ffffff07;border:1px solid #ffffff12;border-radius:10px;padding:10px;text-align:center}
+.recordBox b{display:block;font-size:22px} .recordBox span{font-size:9px;color:#8f9aa8;text-transform:uppercase;letter-spacing:.7px}
+.logoutBtn{width:100%;border:1px solid #ffffff17;background:#ffffff07;color:#fff;border-radius:9px;padding:10px;font-weight:900;cursor:pointer}
+
+/* game shell */
+.gameShell{display:none;min-height:100vh;background:#080b10}
+.gameShellBar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#080b10ee;border-bottom:1px solid #ffffff18;backdrop-filter:blur(12px)}
+.gameShellTitle{font-weight:950;letter-spacing:-.4px}
+.backBtn{appearance:none;border:1px solid #ffffff22;background:#ffffff0b;color:#fff;padding:9px 12px;border-radius:9px;font-weight:850;cursor:pointer}
+.gameFrame{display:block;width:100%;height:calc(100vh - 58px);border:0;background:#0b0d12}
+body.game-open #landingRoot{display:none} body.game-open .gameShell{display:block}
+
+@media(max-width:850px){
+ .landing{display:block;min-height:100vh}
+ .hero{grid-template-columns:1fr;padding:24px 0 30px;gap:24px}
+ .preview{max-width:620px;width:100%;margin:auto}
+ .court{height:360px;min-height:0}
+ footer{padding:14px 8px 20px}
+}
+@media(max-width:520px){
+ .wrap{width:min(100% - 20px,1160px)}
+ h1{font-size:48px;letter-spacing:-2.6px}
+ .lead{font-size:15px}
+ .steps{grid-template-columns:1fr;gap:6px}
+ .step{display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:center;padding:8px 9px}
+ .step b{margin:0} .step span{font-size:10px}
+ .court{height:330px}
+ .board{width:162px;right:9px;bottom:9px}
+ .timeout{left:9px;bottom:9px}
+ .recordMini{display:none}
+}
+
+.rankBtn{
+ border:1px solid #ffffff17;background:#ffffff09;color:#fff;cursor:pointer;
+ padding:9px 13px;border-radius:9px;font-weight:900;font-size:13px;
+}
+.rankTabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 0 13px}
+.rankTab{
+ border:1px solid #ffffff14;background:#ffffff07;color:#b6c0cc;
+ border-radius:9px;padding:9px;font-weight:900;cursor:pointer
+}
+.rankTab.active{background:#1d4ed8;color:#fff}
+.rankSummary{
+ display:flex;justify-content:space-between;gap:10px;align-items:center;
+ color:#8995a4;font-size:10px;margin-bottom:9px
+}
+.rankList{
+ max-height:min(58vh,460px);overflow:auto;border:1px solid #ffffff12;
+ border-radius:11px;background:#0b1017
+}
+.rankRow{
+ display:grid;grid-template-columns:34px minmax(0,1fr) 108px 65px;
+ gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid #ffffff0c
+}
+.rankRow:last-child{border-bottom:0}
+.rankNo{font:900 13px/1 "Courier New",monospace;color:#778391}
+.rankPlayer{min-width:0;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rankRecord{text-align:right;font:900 12px/1 "Courier New",monospace}
+.rankRating{text-align:right;color:#f7c64f;font:900 11px/1 "Courier New",monospace}
+.rankEmpty{padding:28px 16px;text-align:center;color:#8f9baa;font-size:12px;line-height:1.5}
+.rankNote{color:#778391;font-size:9px;line-height:1.45;margin-top:9px}
+@media(max-width:520px){
+ .rankBtn{padding:9px 10px}
+ .rankRow{grid-template-columns:28px minmax(0,1fr) 88px 55px;padding:9px 8px;gap:5px}
+ .rankRating{font-size:10px}.rankRecord{font-size:11px}
+}
+
+
+.dailyBtn{
+ border:1px solid #f7c64f55;background:#f7c64f12;color:#f9dc8a;cursor:pointer;
+ padding:9px 13px;border-radius:9px;font-weight:900;font-size:13px
+}
+.rankTabs{grid-template-columns:repeat(4,1fr)!important}
+.postgameCard{width:min(500px,100%);background:#111720;border:1px solid #ffffff1b;border-radius:18px;padding:20px;box-shadow:0 30px 80px #000c}
+.postTop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.postLabel{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#f7c64f;font-weight:950}
+.postScore{font:900 34px/1 "Courier New",monospace;color:#fff;margin:7px 0 4px}
+.postWinner{font-size:20px;font-weight:950}
+.postGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:15px 0}
+.postBox{background:#ffffff07;border:1px solid #ffffff11;border-radius:10px;padding:10px}
+.postBox span{display:block;color:#8995a4;font-size:9px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.postBox b{font-size:13px}
+.postStatus{padding:8px 10px;border-radius:9px;font-size:11px;font-weight:850;margin:10px 0}
+.postStatus.ranked{background:#14532d55;border:1px solid #22c55e55;color:#86efac}
+.postStatus.unranked{background:#42200666;border:1px solid #f59e0b55;color:#fcd34d}
+.postActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.postActions button{flex:1;min-width:130px;border:0;border-radius:9px;padding:11px;font-weight:900;cursor:pointer}
+.postPrimary{background:#2563eb;color:#fff}
+.postSecondary{background:#ffffff0b;color:#fff;border:1px solid #ffffff18!important}
+.upsetRow{padding:10px;border-bottom:1px solid #ffffff0c}
+.upsetRow:last-child{border-bottom:0}
+.upsetTop{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:900}
+.upsetSub{color:#8f9baa;font-size:10px;margin-top:4px}
+.userRankRow{display:grid;grid-template-columns:34px minmax(0,1fr) 70px 62px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid #ffffff0c}
+@media(max-width:560px){
+ .rankTabs{grid-template-columns:1fr 1fr!important}
+ .dailyBtn{padding:9px 10px}
+ .postGrid{grid-template-columns:1fr}
+ .todayGoatInfo{display:grid!important;grid-template-columns:auto 1fr;column-gap:7px!important;row-gap:2px!important}
+ .todayGoatMeta{grid-column:1/-1}
+}
+
+
+.previewRankBar{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ margin-top:9px;padding:8px 10px;border:1px solid #ffffff12;border-radius:10px;
+ background:#ffffff06
+}
+.previewRankBar>div{display:flex;align-items:center;gap:9px;min-width:0}
+.todayGoatInfo{flex:1;overflow:hidden}
+.previewRankEyebrow{
+ color:#f7c64f;font-size:8px;font-weight:950;letter-spacing:1px;text-transform:uppercase;flex:0 0 auto
+}
+.previewRankBar strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.todayGoatMeta{font-size:9px;color:#84909e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.previewRankBar button{
+ border:1px solid #ffffff17;background:#ffffff09;color:#fff;border-radius:8px;
+ padding:7px 10px;font-size:10px;font-weight:900;cursor:pointer;white-space:nowrap
+}
+.previewRankBar button:hover{background:#ffffff10}
+
+
+.positionFilters{
+ display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:9px 0 2px;
+ padding:5px;border:1px solid #ffffff10;border-radius:10px;background:#ffffff04
+}
+.positionFilter{
+ flex:1;min-width:42px;border:1px solid transparent;border-radius:7px;
+ background:transparent;color:#8f9baa;padding:6px 8px;
+ font-size:9px;font-weight:950;letter-spacing:.5px;cursor:pointer
+}
+.positionFilter:hover{background:#ffffff08;color:#fff}
+.positionFilter.active{
+ background:#f7c64f16;border-color:#f7c64f55;color:#f7d77f
+}
+.rankPlayerWrap{min-width:0;display:flex;align-items:center;gap:7px}
+.rankPos{
+ flex:0 0 auto;display:inline-grid;place-items:center;min-width:25px;height:18px;
+ padding:0 4px;border-radius:5px;background:#ffffff09;border:1px solid #ffffff12;
+ color:#909baa;font-size:8px;font-weight:950;letter-spacing:.4px
+}
+.rankPlayerName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+
+.previewBottomBoard{
+ position:absolute;left:12px;right:12px;bottom:10px;z-index:9;
+ display:grid;grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr);
+ gap:9px;align-items:stretch;padding:7px 9px;
+ background:#07090cf2;border:3px solid #525b66;border-radius:9px;
+ box-shadow:0 4px 12px #000b,inset 0 0 0 2px #111820;
+ font-family:"Courier New",monospace
+}
+.previewScorePanel{
+ min-width:0;display:flex;flex-direction:column;gap:5px;padding:2px 4px
+}
+.previewScoreLabel{
+ color:#95a0af;font-size:7px;font-weight:950;letter-spacing:.8px;text-transform:uppercase
+}
+.previewScorePanel.cpu .previewScoreLabel{text-align:right}
+.previewScoreHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:7px;min-width:0}
+.previewScoreName{
+ min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:950
+}
+.previewScorePanel.user .previewScoreName{color:#60a5fa}
+.previewScorePanel.cpu .previewScoreName{color:#f87171;text-align:right}
+.previewScoreValue{
+ flex:0 0 auto;font:900 31px/.92 "Courier New",monospace;
+ color:#ffb000;text-shadow:0 0 6px #ff9d0088
+}
+.previewUtility{
+ width:105px;max-width:100%;padding:6px 7px;border-radius:7px;
+ text-align:center;font:900 8px/1 Arial,Helvetica,sans-serif;letter-spacing:.15px
+}
+.previewScorePanel.user .previewUtility{align-self:flex-start}
+.previewScorePanel.cpu .previewUtility{align-self:flex-end}
+.timeoutStyle{
+ background:#111827e8;color:#fff;border:1.5px solid #e5e7eb;box-shadow:0 2px 8px #0007
+}
+.skipStyle{
+ background:#b99a57cf;color:#17130b;border:1.5px solid #d7bc78;
+ box-shadow:0 2px 8px #0007,inset 0 0 0 1px #fff1
+}
+.previewMidBoard{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:5px;text-align:center;padding:0 2px
+}
+.previewMidLabel{font-size:7px;font-weight:950;letter-spacing:.75px;color:#c9d1d9}
+.previewCenterScore{
+ min-width:94px;padding:6px 7px;border-radius:999px;
+ background:#141920;border:1px solid #3d4652;color:#facc15;
+ font-size:10px;font-weight:950;letter-spacing:.5px
+}
+.previewStatus{color:#facc15;font-size:7px;font-weight:900;letter-spacing:.55px}
+@media(max-width:620px){
+ .previewBottomBoard{grid-template-columns:minmax(0,1fr) 98px minmax(0,1fr);gap:7px;padding:6px 7px}
+ .previewScoreName{font-size:9px}
+ .previewScoreValue{font-size:27px}
+ .previewUtility{width:92px;font-size:7px;padding:6px 5px}
+ .previewCenterScore{min-width:84px;font-size:9px}
+}
+
+</style>
+</head>
+<body>
+<div id="landingRoot" class="landing">
+<nav>
+ <div class="wrap navin">
+  <a class="brand" href="#"><span class="mark">GvG</span><span>GOAT vs. GOAT</span></a>
+  <div class="navRight">
+   <button class="dailyBtn" type="button" onclick="openDailyChallenge()">Daily</button>
+   <button class="rankBtn" type="button" onclick="openRankings()">Rankings</button>
+   <button id="profileButton" class="profileBtn" type="button" onclick="openAccount()">
+    <span id="profileAvatar" class="avatar">?</span>
+    <span id="profileLabel">Log In</span>
+    <span id="recordMini" class="recordMini"></span>
+   </button>
+   <a class="navPlay" href="#play" onclick="openGame();return false;">Play Now</a>
+  </div>
+ </div>
+</nav>
+
+<main class="wrap hero">
+ <section>
+  <div class="kicker"><span class="kdot"></span>100-Player Basketball 1-on-1 Simulator</div>
+  <h1><span class="grad">Great players.</span><br>One court.</h1>
+  <p class="lead">The CPU reveals one of 100 stars and legends. You choose the best of three counters, set your strategy, and watch them battle to 11.</p>
+  <div class="steps">
+   <div class="step"><b>1. See the matchup</b><span>CPU legend is revealed first.</span></div>
+   <div class="step"><b>2. Pick your legend</b><span>Choose one of three all-time greats, modern stars, or rising candidates.</span></div>
+   <div class="step"><b>3. Set your plan</b><span>Choose offense, defense, then play.</span></div>
+  </div>
+  <div class="actions">
+   <a class="playBtn" href="#play" onclick="openGame();return false;">▶ Start a Matchup</a>
+   <button class="dailyBtn" type="button" onclick="openDailyChallenge()">Daily GOAT Challenge</button>
+   <span class="rule">First to 11 • Win by 2 • Sign in to save your record</span>
+  </div>
+ </section>
+
+ <section class="preview" aria-label="Game preview">
+  <div class="topbar"><span>GOAT vs. GOAT</span><span>FIRST TO 11 • WIN BY 2</span></div>
+  <div class="court">
+   <svg class="previewSvg" viewBox="0 0 500 470" aria-hidden="true" preserveAspectRatio="none">
+    <defs>
+     <linearGradient id="previewWoodBase" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9f5d27"/>
+      <stop offset="100%" stop-color="#7f441c"/>
+     </linearGradient>
+     <pattern id="previewWoodStripe" patternUnits="userSpaceOnUse" width="18" height="18">
+      <rect x="0" y="0" width="18" height="18" fill="url(#previewWoodBase)"/>
+      <rect x="0" y="0" width="9" height="18" fill="#8e4f22" opacity=".3"/>
+      <path d="M0 0 V18 M6 0 V18 M12 0 V18 M18 0 V18" stroke="#c88950" stroke-opacity=".16" stroke-width="1"/>
+     </pattern>
+     <linearGradient id="previewVignette" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".16"/>
+      <stop offset="24%" stop-color="#ffffff" stop-opacity=".03"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity=".22"/>
+     </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="500" height="470" fill="#0c1016"/>
+    <rect x="14" y="10" width="472" height="450" rx="4" class="previewFloor"/>
+    <rect x="14" y="10" width="472" height="450" rx="4" fill="url(#previewVignette)"/>
+    <rect x="30" y="24" width="440" height="412" class="previewBorder"/>
+    <rect x="187" y="24" width="126" height="146" class="previewLine"/>
+    <path d="M212 170 A38 38 0 0 0 288 170" class="previewLine"/>
+    <path d="M212 170 A38 38 0 0 1 288 170" class="previewLine" opacity=".45"/>
+    <line x1="222" y1="54" x2="278" y2="54" class="previewBackboard"/>
+    <circle cx="250" cy="72" r="8" class="previewRim"/>
+    <path d="M216 104 A34 34 0 0 0 284 104" class="previewLine"/>
+    <line x1="66" y1="24" x2="66" y2="160" class="previewLine"/>
+    <line x1="434" y1="24" x2="434" y2="160" class="previewLine"/>
+    <path d="M66 160 A204 204 0 0 0 434 160" class="previewLine"/>
+   </svg>
+   <div class="player you">YOU</div><div class="player cpu">CPU</div><div class="ball"></div>
+   <div class="previewBottomBoard" aria-label="Preview scoreboard">
+    <div class="previewScorePanel user">
+     <div class="previewScoreLabel">USER</div>
+     <div class="previewScoreHeader"><div class="previewScoreName">MICHAEL JORDAN</div><div class="previewScoreValue">6</div></div>
+     <div class="previewUtility timeoutStyle">TIMEOUT</div>
+    </div>
+    <div class="previewMidBoard">
+     <div class="previewMidLabel">LEGENDS 1-ON-1</div>
+     <div class="previewCenterScore">SCORE</div>
+     <div class="previewStatus">FIRST TO 11</div>
+    </div>
+    <div class="previewScorePanel cpu">
+     <div class="previewScoreLabel">CPU</div>
+     <div class="previewScoreHeader"><div class="previewScoreName">LEBRON JAMES</div><div class="previewScoreValue">4</div></div>
+     <div class="previewUtility skipStyle">SKIP TO RESULT</div>
+    </div>
+   </div>
+  </div>
+  <div class="previewRankBar">
+   <div class="todayGoatInfo">
+    <span class="previewRankEyebrow">TODAY'S GOAT</span>
+    <strong id="landingTodayGoat">No leader yet</strong>
+    <span id="landingTodayGoatMeta" class="todayGoatMeta">Play a ranked matchup to start today's board.</span>
+   </div>
+   <button type="button" onclick="openRankings('today')">Today's Rankings</button>
+  </div>
+ </section>
+</main>
+
+<footer>Unofficial basketball simulation • Not affiliated with or endorsed by the NBA, its teams, or players.</footer>
+</div>
+
+<div id="accountModal" class="modalBackdrop" onclick="backdropClose(event)">
+ <div class="modal">
+  <div class="modalHead">
+   <h2 id="accountTitle">Your GOAT vs. GOAT Profile</h2>
+   <button class="closeBtn" type="button" onclick="closeAccount()">×</button>
+  </div>
+
+  <div id="authArea">
+   <div class="tabs">
+    <button id="loginTab" class="tab active" type="button" onclick="showAuth('login')">Log In</button>
+    <button id="createTab" class="tab" type="button" onclick="showAuth('create')">Create Account</button>
+   </div>
+
+   <div id="loginForm">
+    <div class="formGroup"><label>Username</label><input id="loginUser" autocomplete="username"></div>
+    <div class="formGroup"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password"></div>
+    <button class="formAction" type="button" onclick="login()">Log In</button>
+   </div>
+
+   <div id="createForm" style="display:none">
+    <div class="formGroup"><label>Username</label><input id="createUser" maxlength="20" autocomplete="username"></div>
+    <div class="formGroup"><label>Password</label><input id="createPass" type="password" minlength="4" autocomplete="new-password"></div>
+    <button class="formAction" type="button" onclick="createAccount()">Create Account</button>
+   </div>
+   <div id="formMsg" class="formMsg"></div>
+  </div>
+
+  <div id="profileCard" class="profileCard">
+   <div class="profileHero">
+    <div id="profileBigAvatar" class="profileAvatar">G</div>
+    <div><div id="profileName" class="profileName"></div><div style="color:#8f9baa;font-size:11px">GOAT vs. GOAT record</div></div>
+   </div>
+   <div class="recordGrid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="recordBox"><b id="profileWins">0</b><span>Wins</span></div>
+    <div class="recordBox"><b id="profileLosses">0</b><span>Losses</span></div>
+    <div class="recordBox"><b id="profileStreak">0</b><span>Streak</span></div>
+    <div class="recordBox"><b id="profileRating">1500</b><span>Rating</span></div>
+   </div>
+   <button class="logoutBtn" type="button" onclick="logout()">Log Out</button>
+  </div>
+ </div>
+</div>
+
+
+<div id="rankingsModal" class="modalBackdrop" onclick="rankBackdropClose(event)">
+ <div class="modal" style="width:min(560px,100%)">
+  <div class="modalHead">
+   <h2>GOAT Rankings</h2>
+   <button class="closeBtn" type="button" onclick="closeRankings()">×</button>
+  </div>
+  <div class="rankTabs">
+   <button id="todayRankTab" class="rankTab active" type="button" onclick="showRankings('today')">Today</button>
+   <button id="allTimeRankTab" class="rankTab" type="button" onclick="showRankings('all')">All-Time</button>
+   <button id="userRankTab" class="rankTab" type="button" onclick="showRankings('users')">Users</button>
+   <button id="upsetRankTab" class="rankTab" type="button" onclick="showRankings('upsets')">Upsets</button>
+  </div>
+  <div id="positionFilters" class="positionFilters">
+   <button class="positionFilter active" data-pos="ALL" type="button" onclick="setRankingPosition('ALL')">ALL</button>
+   <button class="positionFilter" data-pos="PG" type="button" onclick="setRankingPosition('PG')">PG</button>
+   <button class="positionFilter" data-pos="SG" type="button" onclick="setRankingPosition('SG')">SG</button>
+   <button class="positionFilter" data-pos="SF" type="button" onclick="setRankingPosition('SF')">SF</button>
+   <button class="positionFilter" data-pos="PF" type="button" onclick="setRankingPosition('PF')">PF</button>
+   <button class="positionFilter" data-pos="C" type="button" onclick="setRankingPosition('C')">C</button>
+  </div>
+  <div class="rankSummary">
+   <span id="rankSummaryText">Today's matchup records</span>
+   <span id="rankDateText"></span>
+  </div>
+  <div id="rankList" class="rankList"></div>
+  <div id="rankNote" class="rankNote"></div>
+ </div>
+</div>
+
+
+<div id="postgameModal" class="modalBackdrop">
+ <div class="postgameCard">
+  <div class="postTop">
+   <div>
+    <div id="postLabel" class="postLabel">FINAL</div>
+    <div id="postWinner" class="postWinner"></div>
+   </div>
+   <div id="postScore" class="postScore"></div>
+  </div>
+  <div id="postStatus" class="postStatus ranked"></div>
+  <div class="postGrid">
+   <div class="postBox"><span>Head-to-head</span><b id="postH2H"></b></div>
+   <div class="postBox"><span>Today's H2H</span><b id="postTodayH2H"></b></div>
+   <div class="postBox"><span>GOAT rankings</span><b id="postLegendRanks"></b></div>
+   <div class="postBox"><span>Your ranked record</span><b id="postUserRecord"></b></div>
+  </div>
+  <div id="postExtra" class="rankNote"></div>
+  <div class="postActions">
+   <button class="postPrimary" type="button" onclick="postNextMatchup()">Next Matchup</button>
+   <button id="postReplayDaily" class="postSecondary" type="button" onclick="postReplayDaily()" style="display:none">Replay Daily</button>
+   <button class="postSecondary" type="button" onclick="closePostgame()">View Final Court</button>
+  </div>
+ </div>
+</div>
+
+<section id="gameShell" class="gameShell" aria-label="GOAT vs. GOAT game">
+ <div class="gameShellBar">
+  <button class="backBtn" type="button" onclick="closeGame()">← Back to Home</button>
+  <div class="gameShellTitle">GOAT vs. GOAT</div>
+  <div style="display:flex;gap:7px;align-items:center">
+   <button class="dailyBtn" type="button" onclick="openDailyChallenge()">Daily</button>
+   <button class="rankBtn" type="button" onclick="openRankings()">Rankings</button>
+   <button class="profileBtn" type="button" onclick="openAccount()">
+    <span id="gameProfileLabel">Profile</span>
+   </button>
+  </div>
+ </div>
+ <iframe id="gameFrame" class="gameFrame" title="GOAT vs. GOAT basketball simulator" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;
+&lt;title&gt;NBA Legends 1-on-1 — Natural Game Engine&lt;/title&gt;
+&lt;style&gt;
+:root{
+ --bg:#0b0d12;--panel:#151922;--card:#202530;--border:#3a4350;--text:#f7f8fa;--muted:#aab2bf;
+ --blue:#2563eb;--red:#dc2626;--gold:#d6b24a;--wood:#c99b61;--green:#22c55e;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+main{max-width:980px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px}
+h1,h2,h3{margin-top:0}.muted{color:var(--muted);font-size:13px}.hidden{display:none!important}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px}.metric b{font-size:24px;display:block;margin-top:4px}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--blue);color:#fff}.secondary{background:#2b323d;color:#fff;border:1px solid var(--border)}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800}.badge.blue{background:#163d92}.badge.red{background:#7f1d1d}.dot{width:10px;height:10px;border-radius:50%;background:currentColor}
+.cpuReveal{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#2b1719;border:2px solid var(--red);border-radius:14px;padding:13px}.rating{font-size:28px;font-weight:900}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.choice{background:var(--card);border:2px solid var(--blue);border-radius:14px;padding:12px;text-align:left;color:var(--text)}.choice:hover{border-color:#60a5fa}
+.stat{display:flex;justify-content:space-between;font-size:12px;margin-top:5px}.trait{font-size:12px;margin-top:8px;color:#dbeafe}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.matchup{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:stretch}.playerCard{background:var(--card);border:2px solid var(--border);border-radius:13px;padding:11px}.playerCard.blue{border-color:var(--blue)}.playerCard.red{border-color:var(--red)}.centerVs{align-self:center;font-weight:900}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:12px;color:var(--muted)}select{width:100%;margin-top:4px;background:#0e1117;color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px}
+.callout{background:#0e131b;border:1px solid var(--border);border-radius:11px;padding:10px;font-size:13px}
+.legend{display:flex;justify-content:center;gap:18px;margin-bottom:8px}.legend strong{display:flex;gap:6px;align-items:center}.ldot{width:14px;height:14px;border-radius:50%}.ldot.blue{background:var(--blue)}.ldot.red{background:var(--red)}
+.courtTimeout,.skipResult{
+ position:static;z-index:8;
+ width:112px;
+ padding:7px 8px;border-radius:7px;font-size:8.5px;
+ font-weight:900;letter-spacing:.18px;
+ box-shadow:0 2px 8px #0007;
+}
+.courtTimeout{
+ background:#111827e8;color:#fff;border:1.5px solid #e5e7eb;
+}
+.courtTimeout.resume{background:#166534;border-color:#86efac}
+.courtTimeout:disabled{opacity:.52}
+.skipResult{
+ background:#b99a57cf;color:#17130b;border:1.5px solid #d7bc78;
+ font-weight:950;text-shadow:0 1px 0 #ffffff2b;
+ box-shadow:0 2px 8px #0007, inset 0 0 0 1px #fff1;
+}
+.skipResult:hover{
+ background:#c3a45cda;border-color:#e2c783;
+ box-shadow:0 3px 9px #0008, inset 0 0 0 1px #ffffff26;
+}
+.skipResult:active{background:#ad8e4f}
+.skipResult:disabled{opacity:.5;cursor:not-allowed}
+
+.coinToss{
+ position:absolute;inset:31px 0 96px;z-index:12;
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ background:radial-gradient(circle at center,#05070bc9 0,#05070b88 30%,transparent 68%);
+ pointer-events:none;opacity:0;transition:opacity .14s ease;
+}
+.coinToss.show{opacity:1}
+.coinToss.leaving{opacity:0}
+.coinDisc{
+ width:78px;height:78px;border-radius:50%;
+ display:grid;place-items:center;position:relative;
+ background:linear-gradient(135deg,#2563eb 0 48%,#f7c64f 49% 51%,#dc2626 52% 100%);
+ border:4px solid #f4d67c;
+ box-shadow:0 8px 28px #000c,inset 0 0 0 3px #ffffff22;
+ color:#fff;font-size:12px;font-weight:950;letter-spacing:.8px;
+ transform-style:preserve-3d;
+}
+.coinDisc:after{content:&quot;&quot;;position:absolute;inset:7px;border:1px solid #ffffff55;border-radius:50%}
+.coinDisc.flipping{animation:gvgCoinFlip .58s cubic-bezier(.2,.75,.25,1)}
+@keyframes gvgCoinFlip{
+ 0%{transform:translateY(14px) rotateY(0deg) scale(.82)}
+ 35%{transform:translateY(-36px) rotateY(540deg) scale(1.05)}
+ 70%{transform:translateY(-12px) rotateY(900deg) scale(.98)}
+ 100%{transform:translateY(0) rotateY(1080deg) scale(1)}
+}
+.coinResult{
+ margin-top:9px;min-width:210px;padding:8px 12px;border-radius:10px;
+ background:#07090cf2;border:1px solid #f7c64f99;text-align:center;
+ box-shadow:0 7px 20px #000a;
+ opacity:0;transform:translateY(5px) scale(.97);
+ transition:opacity .14s ease,transform .14s ease;
+}
+.coinToss.reveal .coinResult{opacity:1;transform:translateY(0) scale(1)}
+.coinResult span{display:block;color:#f7c64f;font-size:8px;font-weight:950;letter-spacing:1.2px}
+.coinResult strong{display:block;margin-top:3px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coinResult em{display:block;margin-top:2px;color:#aab2bf;font-size:9px;font-style:normal;font-weight:900}
+
+.courtBottomBoard{
+ position:absolute;left:14px;right:14px;bottom:12px;z-index:9;
+ display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(0,1fr);gap:10px;align-items:stretch;
+ background:#07090cf2;border:3px solid #525b66;border-radius:9px;
+ box-shadow:0 4px 12px #000b,inset 0 0 0 2px #111820;
+ padding:8px 10px;font-family:&quot;Courier New&quot;,monospace;
+}
+.scorePanel{
+ min-width:0;display:flex;flex-direction:column;gap:6px;
+ padding:3px 5px;border-radius:8px;
+}
+.scorePanel.hasBall{background:#101722;box-shadow:inset 0 0 0 1px #facc1560}
+.scoreLabel{font-size:8px;font-weight:900;letter-spacing:.9px;color:#95a0af;text-transform:uppercase}
+.scorePanel.cpu .scoreLabel{text-align:right}
+.scoreHeader{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;min-width:0}
+.scoreText{min-width:0;flex:1}
+.scoreName{font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scorePanel.user .scoreName{color:#60a5fa}
+.scorePanel.cpu .scoreName{color:#f87171;text-align:right}
+.scoreValue{font-size:34px;line-height:.92;color:#ffb000;font-weight:900;text-shadow:0 0 6px #ff9d0088}
+.boardBtn{display:block;width:112px;max-width:100%}
+.scorePanel.user .boardBtn{align-self:flex-start}
+.scorePanel.cpu .boardBtn{align-self:flex-end}
+.midBoard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 2px;text-align:center}
+.midLabel{font-size:8px;font-weight:900;letter-spacing:.9px;color:#c9d1d9;text-transform:uppercase}
+.arenaBallArrow{
+ min-width:112px;padding:6px 8px;border-radius:999px;
+ background:#141920;border:1px solid #3d4652;
+ font-size:11px;font-weight:900;letter-spacing:.25px;color:#facc15;
+ box-shadow:inset 0 0 0 1px #ffffff0d;
+}
+.arenaBallArrow.user{color:#93c5fd}
+.arenaBallArrow.cpu{color:#fca5a5}
+.arenaBallArrow.final{color:#facc15}
+svg{width:100%;height:auto;display:block}
+.courtWrap{
+ max-width:560px;margin:auto;position:relative;
+ background:#0c1016;border:1px solid #ffffff12;border-radius:0 0 12px 12px;overflow:hidden;
+}
+.courtShellTop{
+ height:31px;background:#0a0e14;border-bottom:1px solid #ffffff12;
+ display:flex;align-items:center;justify-content:space-between;
+ padding:0 10px;color:#8995a4;font-size:8px;font-weight:900;letter-spacing:.7px
+}
+.courtFloor{fill:url(#woodStripe)}
+.courtBorder{stroke:#f8f1e5;stroke-width:2.2;fill:none}
+.line{stroke:#f8f1e5;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.backboard{stroke:#f8f1e5;stroke-width:5}
+.rim{stroke:#d95732;stroke-width:4;fill:none}
+.bluePlayer{fill:var(--blue);stroke:#fff;stroke-width:3}
+.redPlayer{fill:var(--red);stroke:#fff;stroke-width:3}
+.marker{fill:#fff;font-size:10px;font-weight:900}
+.ball{fill:#df792b;stroke:#5e3012;stroke-width:2}
+.shotBlue{stroke:#2563eb;fill:#2563eb;opacity:.9}
+.shotRed{stroke:#dc2626;fill:#dc2626;opacity:.9}
+.shotXBlue{stroke:#2563eb;stroke-width:3;stroke-linecap:round;opacity:.95}
+.shotXRed{stroke:#dc2626;stroke-width:3;stroke-linecap:round;opacity:.95}
+.scorebar{display:grid;grid-template-columns:1fr 125px 1fr;gap:8px;margin-top:10px}.score{border:2px solid var(--border);border-radius:12px;padding:10px;background:var(--card)}.score.blue{border-color:var(--blue)}.score.red{border-color:var(--red)}.score.mid{text-align:center}.score b{font-size:26px;display:block}
+.statsGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.energy{height:8px;background:#39414d;border-radius:999px;overflow:hidden;margin-top:4px}.energy span{display:block;height:100%;background:var(--gold)}
+@media(max-width:700px){.choices{grid-template-columns:1fr}.matchup{grid-template-columns:1fr}.centerVs{text-align:center}.controls{grid-template-columns:1fr}.scorebar{grid-template-columns:1fr 92px 1fr}}
+@media(max-width:520px){
+ .courtBottomBoard{grid-template-columns:minmax(0,1fr) 104px minmax(0,1fr);gap:8px;padding:7px 8px}
+ .scoreName{font-size:11px}
+ .scoreValue{font-size:30px}
+ .boardBtn{width:100px;font-size:8px;padding:7px 6px}
+ .arenaBallArrow{min-width:98px;font-size:10px;padding:6px 7px}
+}
+
+svg{width:100%;height:auto;display:block}
+.courtWrap{
+ max-width:560px;margin:auto;position:relative;
+ background:#0c1016;border:1px solid #ffffff12;border-radius:0 0 12px 12px;overflow:hidden;
+}
+.courtShellTop{
+ height:31px;background:#0a0e14;border-bottom:1px solid #ffffff12;
+ display:flex;align-items:center;justify-content:space-between;
+ padding:0 10px;color:#8995a4;font-size:8px;font-weight:900;letter-spacing:.7px
+}
+.courtFloor{fill:url(#woodStripe)}
+.courtBorder{stroke:#f8f1e5;stroke-width:2.2;fill:none}
+.line{stroke:#f8f1e5;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.backboard{stroke:#f8f1e5;stroke-width:5}
+.rim{stroke:#d95732;stroke-width:4;fill:none}
+.bluePlayer{fill:var(--blue);stroke:#fff;stroke-width:3}
+.redPlayer{fill:var(--red);stroke:#fff;stroke-width:3}
+.marker{fill:#fff;font-size:10px;font-weight:900}
+.ball{fill:#df792b;stroke:#5e3012;stroke-width:2}
+.shotBlue{stroke:#2563eb;fill:#2563eb;opacity:.9}
+.shotRed{stroke:#dc2626;fill:#dc2626;opacity:.9}
+.shotXBlue{stroke:#2563eb;stroke-width:3;stroke-linecap:round;opacity:.95}
+.shotXRed{stroke:#dc2626;stroke-width:3;stroke-linecap:round;opacity:.95}
+.scorebar{display:grid;grid-template-columns:1fr 125px 1fr;gap:8px;margin-top:10px}.score{border:2px solid var(--border);border-radius:12px;padding:10px;background:var(--card)}.score.blue{border-color:var(--blue)}.score.red{border-color:var(--red)}.score.mid{text-align:center}.score b{font-size:26px;display:block}
+.statsGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.energy{height:8px;background:#39414d;border-radius:999px;overflow:hidden;margin-top:4px}.energy span{display:block;height:100%;background:var(--gold)}
+@media(max-width:700px){.choices{grid-template-columns:1fr}.matchup{grid-template-columns:1fr}.centerVs{text-align:center}.controls{grid-template-columns:1fr}.scorebar{grid-template-columns:1fr 92px 1fr}}
+
+.shotMapKey{
+ position:absolute;right:9px;top:39px;z-index:8;
+ display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+ padding:5px 7px;border-radius:7px;
+ background:#07090cb8;border:1px solid #ffffff17;
+ color:#cbd3de;font-size:7px;font-weight:800;line-height:1.2;
+ box-shadow:0 2px 8px #0007;pointer-events:none
+}
+.shotMapKey span{
+ color:#7f8b99;font-size:6.5px;letter-spacing:.7px;font-weight:950
+}
+.shotMapKey b{font-weight:850;white-space:nowrap}
+.statCardHead{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.statCardHead strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.playerSideBadge{
+ flex:0 0 auto;border-radius:6px;padding:3px 6px;
+ font-size:8px;font-weight:950;letter-spacing:.55px;border:1px solid transparent
+}
+.playerSideBadge.user{color:#93c5fd;background:#2563eb20;border-color:#2563eb66}
+.playerSideBadge.cpu{color:#fca5a5;background:#dc262620;border-color:#dc262666}
+@media(max-width:520px){
+ .shotMapKey{right:7px;top:37px;padding:4px 6px;font-size:6.5px}
+ .playerSideBadge{font-size:7.5px;padding:3px 5px}
+}
+
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;main&gt;
+&lt;section class=&quot;panel&quot;&gt;
+ &lt;h1&gt;NBA Legends 1-on-1&lt;/h1&gt;
+ &lt;p class=&quot;muted&quot;&gt;Natural possession rules: makes change possession; misses are rebounded; every rebound must be cleared outside the arc.&lt;/p&gt;
+ &lt;div class=&quot;metrics&quot;&gt;
+  &lt;div class=&quot;metric&quot;&gt;&lt;span class=&quot;muted&quot;&gt;Your wins&lt;/span&gt;&lt;b id=&quot;wins&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+  &lt;div class=&quot;metric&quot;&gt;&lt;span class=&quot;muted&quot;&gt;CPU wins&lt;/span&gt;&lt;b id=&quot;losses&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+  &lt;div class=&quot;metric&quot;&gt;&lt;span class=&quot;muted&quot;&gt;Streak&lt;/span&gt;&lt;b id=&quot;streak&quot;&gt;0&lt;/b&gt;&lt;/div&gt;
+ &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;pickPanel&quot; class=&quot;panel&quot;&gt;
+ &lt;h2 id=&quot;pickTitle&quot;&gt;CPU reveals first&lt;/h2&gt;&lt;div id=&quot;modeNote&quot; class=&quot;muted&quot; style=&quot;margin:-6px 0 10px&quot;&gt;&lt;/div&gt;
+ &lt;div id=&quot;cpuReveal&quot; class=&quot;cpuReveal&quot;&gt;&lt;/div&gt;
+ &lt;h3 style=&quot;margin-top:14px&quot;&gt;Choose your counter&lt;/h3&gt;
+ &lt;p class=&quot;muted&quot;&gt;BLUE = You. RED = CPU.&lt;/p&gt;
+ &lt;div id=&quot;choices&quot; class=&quot;choices&quot;&gt;&lt;/div&gt;
+ &lt;div class=&quot;actions&quot;&gt;&lt;button id=&quot;reroll&quot; class=&quot;secondary&quot;&gt;New matchup&lt;/button&gt;&lt;span id=&quot;rerollHint&quot; class=&quot;muted&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;matchupPanel&quot; class=&quot;panel hidden&quot;&gt;
+ &lt;h2&gt;Matchup&lt;/h2&gt;
+ &lt;div class=&quot;matchup&quot;&gt;
+  &lt;div id=&quot;blueCard&quot; class=&quot;playerCard blue&quot;&gt;&lt;/div&gt;&lt;div class=&quot;centerVs&quot;&gt;VS&lt;/div&gt;&lt;div id=&quot;redCard&quot; class=&quot;playerCard red&quot;&gt;&lt;/div&gt;
+ &lt;/div&gt;
+ &lt;div id=&quot;matchupRead&quot; class=&quot;callout&quot; style=&quot;margin-top:10px&quot;&gt;&lt;/div&gt;
+ &lt;div class=&quot;controls&quot; style=&quot;margin-top:12px&quot;&gt;
+  &lt;label&gt;Your offense&lt;select id=&quot;offense&quot;&gt;&lt;option value=&quot;auto&quot;&gt;Play to tendencies&lt;/option&gt;&lt;option value=&quot;balanced&quot;&gt;Balanced&lt;/option&gt;&lt;option value=&quot;rim&quot;&gt;Attack rim&lt;/option&gt;&lt;option value=&quot;mid&quot;&gt;Mid-range&lt;/option&gt;&lt;option value=&quot;three&quot;&gt;Hunt threes&lt;/option&gt;&lt;option value=&quot;post&quot;&gt;Post up&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+  &lt;label&gt;Your defense&lt;select id=&quot;defense&quot;&gt;&lt;option value=&quot;balanced&quot;&gt;Balanced&lt;/option&gt;&lt;option value=&quot;pressure&quot;&gt;Pressure ball&lt;/option&gt;&lt;option value=&quot;rim&quot;&gt;Protect rim&lt;/option&gt;&lt;option value=&quot;sag&quot;&gt;Sag off&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+ &lt;/div&gt;
+ &lt;div class=&quot;actions&quot;&gt;
+  &lt;button id=&quot;start&quot; class=&quot;primary&quot;&gt;WATCH GAME&lt;/button&gt;
+  &lt;button id=&quot;quickSim&quot; class=&quot;secondary&quot;&gt;QUICK SIM&lt;/button&gt;
+ &lt;/div&gt;
+ &lt;p class=&quot;muted&quot; style=&quot;margin:8px 0 0&quot;&gt;Quick Sim uses the same matchup engine and your current strategy, but skips the possession animations.&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;gamePanel&quot; class=&quot;panel hidden&quot;&gt;
+ &lt;div class=&quot;courtWrap&quot;&gt;
+  &lt;div class=&quot;shotMapKey&quot; aria-label=&quot;Shot map key&quot;&gt;&lt;span&gt;SHOT MAP&lt;/span&gt;&lt;b&gt;● made&lt;/b&gt;&lt;b&gt;× missed&lt;/b&gt;&lt;/div&gt;
+  &lt;div class=&quot;courtShellTop&quot;&gt;&lt;span&gt;GOAT vs. GOAT&lt;/span&gt;&lt;span&gt;FIRST TO 11 • WIN BY 2&lt;/span&gt;&lt;/div&gt;
+  &lt;div id=&quot;coinToss&quot; class=&quot;coinToss hidden&quot; aria-live=&quot;polite&quot;&gt;
+   &lt;div id=&quot;coinDisc&quot; class=&quot;coinDisc&quot;&gt;GvG&lt;/div&gt;
+   &lt;div class=&quot;coinResult&quot;&gt;
+    &lt;span&gt;FIRST BALL&lt;/span&gt;
+    &lt;strong id=&quot;coinWinner&quot;&gt;&lt;/strong&gt;
+    &lt;em id=&quot;coinWinnerSide&quot;&gt;&lt;/em&gt;
+   &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;svg viewBox=&quot;0 0 500 470&quot;&gt;
+   &lt;defs&gt;
+    &lt;linearGradient id=&quot;woodBase&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;&gt;
+     &lt;stop offset=&quot;0%&quot; stop-color=&quot;#9f5d27&quot;/&gt;
+     &lt;stop offset=&quot;100%&quot; stop-color=&quot;#7f441c&quot;/&gt;
+    &lt;/linearGradient&gt;
+    &lt;pattern id=&quot;woodStripe&quot; patternUnits=&quot;userSpaceOnUse&quot; width=&quot;18&quot; height=&quot;18&quot;&gt;
+     &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;18&quot; height=&quot;18&quot; fill=&quot;url(#woodBase)&quot;/&gt;
+     &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;9&quot; height=&quot;18&quot; fill=&quot;#8e4f22&quot; opacity=&quot;.3&quot;/&gt;
+     &lt;path d=&quot;M0 0 V18 M6 0 V18 M12 0 V18 M18 0 V18&quot; stroke=&quot;#c88950&quot; stroke-opacity=&quot;.16&quot; stroke-width=&quot;1&quot;/&gt;
+    &lt;/pattern&gt;
+    &lt;linearGradient id=&quot;courtVignette&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;&gt;
+     &lt;stop offset=&quot;0%&quot; stop-color=&quot;#ffffff&quot; stop-opacity=&quot;.16&quot;/&gt;
+     &lt;stop offset=&quot;24%&quot; stop-color=&quot;#ffffff&quot; stop-opacity=&quot;.03&quot;/&gt;
+     &lt;stop offset=&quot;100%&quot; stop-color=&quot;#000000&quot; stop-opacity=&quot;.22&quot;/&gt;
+    &lt;/linearGradient&gt;
+   &lt;/defs&gt;
+   &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;500&quot; height=&quot;470&quot; fill=&quot;#0c1016&quot;/&gt;
+   &lt;rect x=&quot;14&quot; y=&quot;10&quot; width=&quot;472&quot; height=&quot;450&quot; rx=&quot;4&quot; class=&quot;courtFloor&quot;/&gt;
+   &lt;rect x=&quot;14&quot; y=&quot;10&quot; width=&quot;472&quot; height=&quot;450&quot; rx=&quot;4&quot; fill=&quot;url(#courtVignette)&quot;/&gt;
+   &lt;rect x=&quot;30&quot; y=&quot;24&quot; width=&quot;440&quot; height=&quot;412&quot; class=&quot;courtBorder&quot;/&gt;
+
+   &lt;rect x=&quot;187&quot; y=&quot;24&quot; width=&quot;126&quot; height=&quot;146&quot; class=&quot;line&quot;/&gt;
+   &lt;path d=&quot;M212 170 A38 38 0 0 0 288 170&quot; class=&quot;line&quot;/&gt;
+   &lt;path d=&quot;M212 170 A38 38 0 0 1 288 170&quot; class=&quot;line&quot; opacity=&quot;.45&quot;/&gt;
+   &lt;line x1=&quot;222&quot; y1=&quot;54&quot; x2=&quot;278&quot; y2=&quot;54&quot; class=&quot;backboard&quot;/&gt;
+   &lt;circle cx=&quot;250&quot; cy=&quot;72&quot; r=&quot;8&quot; class=&quot;rim&quot;/&gt;
+   &lt;path d=&quot;M216 104 A34 34 0 0 0 284 104&quot; class=&quot;line&quot;/&gt;
+
+   &lt;line x1=&quot;66&quot; y1=&quot;24&quot; x2=&quot;66&quot; y2=&quot;160&quot; class=&quot;line&quot;/&gt;
+   &lt;line x1=&quot;434&quot; y1=&quot;24&quot; x2=&quot;434&quot; y2=&quot;160&quot; class=&quot;line&quot;/&gt;
+   &lt;path d=&quot;M66 160 A204 204 0 0 0 434 160&quot; class=&quot;line&quot;/&gt;
+
+   &lt;g id=&quot;shots&quot;&gt;&lt;/g&gt;
+   &lt;circle id=&quot;ball&quot; cx=&quot;228&quot; cy=&quot;360&quot; r=&quot;6&quot; class=&quot;ball&quot;/&gt;
+   &lt;circle id=&quot;blue&quot; cx=&quot;220&quot; cy=&quot;370&quot; r=&quot;15&quot; class=&quot;bluePlayer&quot;/&gt;
+   &lt;circle id=&quot;red&quot; cx=&quot;270&quot; cy=&quot;335&quot; r=&quot;15&quot; class=&quot;redPlayer&quot;/&gt;
+   &lt;text id=&quot;blueText&quot; x=&quot;220&quot; y=&quot;374&quot; text-anchor=&quot;middle&quot; class=&quot;marker&quot;&gt;YOU&lt;/text&gt;
+   &lt;text id=&quot;redText&quot; x=&quot;270&quot; y=&quot;339&quot; text-anchor=&quot;middle&quot; class=&quot;marker&quot;&gt;CPU&lt;/text&gt;
+  &lt;/svg&gt;
+
+  &lt;div class=&quot;courtBottomBoard&quot; aria-label=&quot;Game scoreboard&quot;&gt;
+   &lt;div id=&quot;blueBoardRow&quot; class=&quot;scorePanel user&quot;&gt;
+    &lt;div class=&quot;scoreLabel&quot;&gt;USER&lt;/div&gt;
+    &lt;div class=&quot;scoreHeader&quot;&gt;
+     &lt;div class=&quot;scoreText&quot;&gt;&lt;div id=&quot;blueName&quot; class=&quot;scoreName&quot;&gt;YOU&lt;/div&gt;&lt;/div&gt;
+     &lt;div id=&quot;blueScore&quot; class=&quot;scoreValue&quot;&gt;0&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;button id=&quot;timeoutBtn&quot; class=&quot;courtTimeout boardBtn&quot;&gt;TIMEOUT&lt;/button&gt;
+   &lt;/div&gt;
+   &lt;div class=&quot;midBoard&quot;&gt;
+    &lt;div class=&quot;midLabel&quot;&gt;LEGENDS 1-ON-1&lt;/div&gt;
+    &lt;div id=&quot;ballArrow&quot; class=&quot;arenaBallArrow&quot;&gt;BALL LIVE&lt;/div&gt;
+    &lt;div id=&quot;status&quot; class=&quot;hidden&quot; aria-live=&quot;polite&quot;&gt;READY&lt;/div&gt;
+   &lt;/div&gt;
+   &lt;div id=&quot;redBoardRow&quot; class=&quot;scorePanel cpu&quot;&gt;
+    &lt;div class=&quot;scoreLabel&quot;&gt;CPU&lt;/div&gt;
+    &lt;div class=&quot;scoreHeader&quot;&gt;
+     &lt;div class=&quot;scoreText&quot;&gt;&lt;div id=&quot;redName&quot; class=&quot;scoreName&quot;&gt;CPU&lt;/div&gt;&lt;/div&gt;
+     &lt;div id=&quot;redScore&quot; class=&quot;scoreValue&quot;&gt;0&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;button id=&quot;skipResultBtn&quot; class=&quot;skipResult hidden boardBtn&quot;&gt;SKIP TO RESULT&lt;/button&gt;
+   &lt;/div&gt;
+  &lt;/div&gt;
+ &lt;/div&gt;
+
+ &lt;div class=&quot;statsGrid&quot; style=&quot;margin-top:10px&quot;&gt;
+  &lt;div class=&quot;playerCard blue&quot;&gt;
+   &lt;div class=&quot;statCardHead&quot;&gt;&lt;strong id=&quot;blueStatName&quot;&gt;&lt;/strong&gt;&lt;span class=&quot;playerSideBadge user&quot;&gt;USER&lt;/span&gt;&lt;/div&gt;
+   &lt;div id=&quot;blueTrait&quot; class=&quot;trait&quot;&gt;&lt;/div&gt;&lt;div id=&quot;blueStats&quot; class=&quot;muted&quot; style=&quot;margin-top:7px&quot;&gt;&lt;/div&gt;
+   &lt;div class=&quot;muted&quot; style=&quot;margin-top:7px&quot;&gt;Energy&lt;/div&gt;&lt;div class=&quot;energy&quot;&gt;&lt;span id=&quot;blueEnergy&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;playerCard red&quot;&gt;
+   &lt;div class=&quot;statCardHead&quot;&gt;&lt;strong id=&quot;redStatName&quot;&gt;&lt;/strong&gt;&lt;span class=&quot;playerSideBadge cpu&quot;&gt;CPU&lt;/span&gt;&lt;/div&gt;
+   &lt;div id=&quot;redTrait&quot; class=&quot;trait&quot;&gt;&lt;/div&gt;&lt;div id=&quot;redStats&quot; class=&quot;muted&quot; style=&quot;margin-top:7px&quot;&gt;&lt;/div&gt;
+   &lt;div class=&quot;muted&quot; style=&quot;margin-top:7px&quot;&gt;Energy&lt;/div&gt;&lt;div class=&quot;energy&quot;&gt;&lt;span id=&quot;redEnergy&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+ &lt;/div&gt;
+
+ &lt;div id=&quot;timeoutPanel&quot; class=&quot;playerCard blue hidden&quot; style=&quot;margin-top:10px&quot;&gt;
+  &lt;h3&gt;Timeout — adjust strategy&lt;/h3&gt;
+  &lt;div class=&quot;controls&quot;&gt;
+   &lt;label&gt;Offense&lt;select id=&quot;timeoutOffense&quot;&gt;&lt;option value=&quot;auto&quot;&gt;Play to tendencies&lt;/option&gt;&lt;option value=&quot;balanced&quot;&gt;Balanced&lt;/option&gt;&lt;option value=&quot;rim&quot;&gt;Attack rim&lt;/option&gt;&lt;option value=&quot;mid&quot;&gt;Mid-range&lt;/option&gt;&lt;option value=&quot;three&quot;&gt;Hunt threes&lt;/option&gt;&lt;option value=&quot;post&quot;&gt;Post up&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+   &lt;label&gt;Defense&lt;select id=&quot;timeoutDefense&quot;&gt;&lt;option value=&quot;balanced&quot;&gt;Balanced&lt;/option&gt;&lt;option value=&quot;pressure&quot;&gt;Pressure ball&lt;/option&gt;&lt;option value=&quot;rim&quot;&gt;Protect rim&lt;/option&gt;&lt;option value=&quot;sag&quot;&gt;Sag off&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;muted&quot; style=&quot;margin:10px 0 0&quot;&gt;Set your strategy, then tap &lt;strong&gt;RESUME&lt;/strong&gt; on the lower-left of the court.&lt;/p&gt;
+ &lt;/div&gt;
+
+ &lt;div id=&quot;commentary&quot; class=&quot;callout&quot; style=&quot;margin-top:10px&quot;&gt;Ready.&lt;/div&gt;
+ &lt;div class=&quot;actions&quot;&gt;&lt;button id=&quot;next&quot; class=&quot;secondary hidden&quot;&gt;Next matchup&lt;/button&gt;&lt;/div&gt;
+&lt;/section&gt;
+&lt;/main&gt;
+
+&lt;script&gt;
+const P=[{&quot;name&quot;:&quot;Kareem Abdul-Jabbar&quot;,&quot;ovr&quot;:98,&quot;off&quot;:99,&quot;def&quot;:97,&quot;size&quot;:100,&quot;shoot&quot;:90,&quot;ath&quot;:92,&quot;stam&quot;:99,&quot;handle&quot;:78,&quot;post&quot;:100,&quot;will&quot;:98,&quot;trait&quot;:&quot;Skyhook&quot;,&quot;t&quot;:{&quot;drive&quot;:10,&quot;mid&quot;:20,&quot;three&quot;:0,&quot;post&quot;:68,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Ray Allen&quot;,&quot;ovr&quot;:92,&quot;off&quot;:95,&quot;def&quot;:88,&quot;size&quot;:88,&quot;shoot&quot;:99,&quot;ath&quot;:91,&quot;stam&quot;:96,&quot;handle&quot;:90,&quot;post&quot;:75,&quot;will&quot;:94,&quot;trait&quot;:&quot;Pure Release&quot;,&quot;t&quot;:{&quot;drive&quot;:16,&quot;mid&quot;:18,&quot;three&quot;:42,&quot;post&quot;:8,&quot;step&quot;:16}},{&quot;name&quot;:&quot;Giannis Antetokounmpo&quot;,&quot;ovr&quot;:96,&quot;off&quot;:97,&quot;def&quot;:98,&quot;size&quot;:100,&quot;shoot&quot;:76,&quot;ath&quot;:100,&quot;stam&quot;:98,&quot;handle&quot;:91,&quot;post&quot;:91,&quot;will&quot;:97,&quot;trait&quot;:&quot;Rim Pressure&quot;,&quot;t&quot;:{&quot;drive&quot;:52,&quot;mid&quot;:9,&quot;three&quot;:7,&quot;post&quot;:28,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Carmelo Anthony&quot;,&quot;ovr&quot;:94,&quot;off&quot;:98,&quot;def&quot;:84,&quot;size&quot;:93,&quot;shoot&quot;:95,&quot;ath&quot;:92,&quot;stam&quot;:95,&quot;handle&quot;:94,&quot;post&quot;:95,&quot;will&quot;:94,&quot;trait&quot;:&quot;Triple Threat&quot;,&quot;t&quot;:{&quot;drive&quot;:20,&quot;mid&quot;:32,&quot;three&quot;:20,&quot;post&quot;:20,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Nate Archibald&quot;,&quot;ovr&quot;:91,&quot;off&quot;:95,&quot;def&quot;:83,&quot;size&quot;:74,&quot;shoot&quot;:88,&quot;ath&quot;:96,&quot;stam&quot;:97,&quot;handle&quot;:99,&quot;post&quot;:62,&quot;will&quot;:95,&quot;trait&quot;:&quot;Tiny Giant&quot;,&quot;t&quot;:{&quot;drive&quot;:42,&quot;mid&quot;:24,&quot;three&quot;:15,&quot;post&quot;:2,&quot;step&quot;:17}},{&quot;name&quot;:&quot;Paul Arizin&quot;,&quot;ovr&quot;:91,&quot;off&quot;:95,&quot;def&quot;:84,&quot;size&quot;:87,&quot;shoot&quot;:94,&quot;ath&quot;:89,&quot;stam&quot;:95,&quot;handle&quot;:86,&quot;post&quot;:82,&quot;will&quot;:94,&quot;trait&quot;:&quot;Jump Shot Pioneer&quot;,&quot;t&quot;:{&quot;drive&quot;:24,&quot;mid&quot;:37,&quot;three&quot;:22,&quot;post&quot;:11,&quot;step&quot;:6}},{&quot;name&quot;:&quot;Charles Barkley&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:91,&quot;size&quot;:97,&quot;shoot&quot;:78,&quot;ath&quot;:96,&quot;stam&quot;:97,&quot;handle&quot;:89,&quot;post&quot;:97,&quot;will&quot;:98,&quot;trait&quot;:&quot;Bully Ball&quot;,&quot;t&quot;:{&quot;drive&quot;:30,&quot;mid&quot;:10,&quot;three&quot;:5,&quot;post&quot;:52,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Rick Barry&quot;,&quot;ovr&quot;:94,&quot;off&quot;:98,&quot;def&quot;:88,&quot;size&quot;:91,&quot;shoot&quot;:96,&quot;ath&quot;:90,&quot;stam&quot;:97,&quot;handle&quot;:92,&quot;post&quot;:88,&quot;will&quot;:97,&quot;trait&quot;:&quot;Complete Scorer&quot;,&quot;t&quot;:{&quot;drive&quot;:21,&quot;mid&quot;:33,&quot;three&quot;:26,&quot;post&quot;:14,&quot;step&quot;:6}},{&quot;name&quot;:&quot;Elgin Baylor&quot;,&quot;ovr&quot;:96,&quot;off&quot;:99,&quot;def&quot;:90,&quot;size&quot;:94,&quot;shoot&quot;:89,&quot;ath&quot;:98,&quot;stam&quot;:97,&quot;handle&quot;:94,&quot;post&quot;:94,&quot;will&quot;:98,&quot;trait&quot;:&quot;Hang Time&quot;,&quot;t&quot;:{&quot;drive&quot;:34,&quot;mid&quot;:26,&quot;three&quot;:8,&quot;post&quot;:27,&quot;step&quot;:5}},{&quot;name&quot;:&quot;Dave Bing&quot;,&quot;ovr&quot;:90,&quot;off&quot;:94,&quot;def&quot;:87,&quot;size&quot;:84,&quot;shoot&quot;:90,&quot;ath&quot;:94,&quot;stam&quot;:95,&quot;handle&quot;:94,&quot;post&quot;:75,&quot;will&quot;:93,&quot;trait&quot;:&quot;Attack Guard&quot;,&quot;t&quot;:{&quot;drive&quot;:35,&quot;mid&quot;:29,&quot;three&quot;:16,&quot;post&quot;:8,&quot;step&quot;:12}},{&quot;name&quot;:&quot;Larry Bird&quot;,&quot;ovr&quot;:98,&quot;off&quot;:99,&quot;def&quot;:93,&quot;size&quot;:88,&quot;shoot&quot;:99,&quot;ath&quot;:82,&quot;stam&quot;:96,&quot;handle&quot;:92,&quot;post&quot;:92,&quot;will&quot;:98,&quot;trait&quot;:&quot;Punish the Gap&quot;,&quot;t&quot;:{&quot;drive&quot;:14,&quot;mid&quot;:31,&quot;three&quot;:27,&quot;post&quot;:20,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Kobe Bryant&quot;,&quot;ovr&quot;:97,&quot;off&quot;:98,&quot;def&quot;:96,&quot;size&quot;:91,&quot;shoot&quot;:96,&quot;ath&quot;:97,&quot;stam&quot;:98,&quot;handle&quot;:97,&quot;post&quot;:91,&quot;will&quot;:100,&quot;trait&quot;:&quot;Mamba Mode&quot;,&quot;t&quot;:{&quot;drive&quot;:27,&quot;mid&quot;:36,&quot;three&quot;:16,&quot;post&quot;:10,&quot;step&quot;:11}},{&quot;name&quot;:&quot;Wilt Chamberlain&quot;,&quot;ovr&quot;:99,&quot;off&quot;:100,&quot;def&quot;:98,&quot;size&quot;:100,&quot;shoot&quot;:70,&quot;ath&quot;:100,&quot;stam&quot;:100,&quot;handle&quot;:80,&quot;post&quot;:100,&quot;will&quot;:97,&quot;trait&quot;:&quot;Force of Nature&quot;,&quot;t&quot;:{&quot;drive&quot;:22,&quot;mid&quot;:8,&quot;three&quot;:0,&quot;post&quot;:68,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Bob Cousy&quot;,&quot;ovr&quot;:90,&quot;off&quot;:92,&quot;def&quot;:83,&quot;size&quot;:79,&quot;shoot&quot;:84,&quot;ath&quot;:90,&quot;stam&quot;:97,&quot;handle&quot;:99,&quot;post&quot;:66,&quot;will&quot;:95,&quot;trait&quot;:&quot;Wizard Handle&quot;,&quot;t&quot;:{&quot;drive&quot;:30,&quot;mid&quot;:28,&quot;three&quot;:14,&quot;post&quot;:4,&quot;step&quot;:24}},{&quot;name&quot;:&quot;Dave Cowens&quot;,&quot;ovr&quot;:92,&quot;off&quot;:90,&quot;def&quot;:97,&quot;size&quot;:95,&quot;shoot&quot;:82,&quot;ath&quot;:94,&quot;stam&quot;:100,&quot;handle&quot;:80,&quot;post&quot;:91,&quot;will&quot;:99,&quot;trait&quot;:&quot;Relentless Big&quot;,&quot;t&quot;:{&quot;drive&quot;:21,&quot;mid&quot;:17,&quot;three&quot;:2,&quot;post&quot;:57,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Billy Cunningham&quot;,&quot;ovr&quot;:92,&quot;off&quot;:94,&quot;def&quot;:90,&quot;size&quot;:92,&quot;shoot&quot;:84,&quot;ath&quot;:95,&quot;stam&quot;:97,&quot;handle&quot;:88,&quot;post&quot;:91,&quot;will&quot;:96,&quot;trait&quot;:&quot;Kangaroo Kid&quot;,&quot;t&quot;:{&quot;drive&quot;:29,&quot;mid&quot;:21,&quot;three&quot;:5,&quot;post&quot;:40,&quot;step&quot;:5}},{&quot;name&quot;:&quot;Stephen Curry&quot;,&quot;ovr&quot;:97,&quot;off&quot;:100,&quot;def&quot;:86,&quot;size&quot;:79,&quot;shoot&quot;:100,&quot;ath&quot;:93,&quot;stam&quot;:96,&quot;handle&quot;:99,&quot;post&quot;:60,&quot;will&quot;:95,&quot;trait&quot;:&quot;Heat Check&quot;,&quot;t&quot;:{&quot;drive&quot;:22,&quot;mid&quot;:8,&quot;three&quot;:48,&quot;post&quot;:2,&quot;step&quot;:20}},{&quot;name&quot;:&quot;Anthony Davis&quot;,&quot;ovr&quot;:96,&quot;off&quot;:96,&quot;def&quot;:100,&quot;size&quot;:99,&quot;shoot&quot;:86,&quot;ath&quot;:97,&quot;stam&quot;:94,&quot;handle&quot;:86,&quot;post&quot;:96,&quot;will&quot;:94,&quot;trait&quot;:&quot;Two-Way Length&quot;,&quot;t&quot;:{&quot;drive&quot;:20,&quot;mid&quot;:21,&quot;three&quot;:7,&quot;post&quot;:49,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Dave DeBusschere&quot;,&quot;ovr&quot;:90,&quot;off&quot;:87,&quot;def&quot;:98,&quot;size&quot;:94,&quot;shoot&quot;:84,&quot;ath&quot;:91,&quot;stam&quot;:99,&quot;handle&quot;:79,&quot;post&quot;:89,&quot;will&quot;:98,&quot;trait&quot;:&quot;Defensive Enforcer&quot;,&quot;t&quot;:{&quot;drive&quot;:19,&quot;mid&quot;:23,&quot;three&quot;:10,&quot;post&quot;:44,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Clyde Drexler&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:92,&quot;size&quot;:92,&quot;shoot&quot;:87,&quot;ath&quot;:99,&quot;stam&quot;:97,&quot;handle&quot;:94,&quot;post&quot;:86,&quot;will&quot;:96,&quot;trait&quot;:&quot;Glide&quot;,&quot;t&quot;:{&quot;drive&quot;:39,&quot;mid&quot;:19,&quot;three&quot;:12,&quot;post&quot;:22,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Tim Duncan&quot;,&quot;ovr&quot;:97,&quot;off&quot;:96,&quot;def&quot;:99,&quot;size&quot;:98,&quot;shoot&quot;:86,&quot;ath&quot;:87,&quot;stam&quot;:99,&quot;handle&quot;:80,&quot;post&quot;:99,&quot;will&quot;:98,&quot;trait&quot;:&quot;Fundamentals&quot;,&quot;t&quot;:{&quot;drive&quot;:12,&quot;mid&quot;:24,&quot;three&quot;:1,&quot;post&quot;:60,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Kevin Durant&quot;,&quot;ovr&quot;:97,&quot;off&quot;:100,&quot;def&quot;:91,&quot;size&quot;:94,&quot;shoot&quot;:99,&quot;ath&quot;:95,&quot;stam&quot;:96,&quot;handle&quot;:96,&quot;post&quot;:92,&quot;will&quot;:96,&quot;trait&quot;:&quot;Unblockable Release&quot;,&quot;t&quot;:{&quot;drive&quot;:24,&quot;mid&quot;:31,&quot;three&quot;:28,&quot;post&quot;:10,&quot;step&quot;:7}},{&quot;name&quot;:&quot;Julius Erving&quot;,&quot;ovr&quot;:96,&quot;off&quot;:98,&quot;def&quot;:93,&quot;size&quot;:95,&quot;shoot&quot;:86,&quot;ath&quot;:100,&quot;stam&quot;:97,&quot;handle&quot;:94,&quot;post&quot;:92,&quot;will&quot;:97,&quot;trait&quot;:&quot;Above the Rim&quot;,&quot;t&quot;:{&quot;drive&quot;:43,&quot;mid&quot;:20,&quot;three&quot;:6,&quot;post&quot;:25,&quot;step&quot;:6}},{&quot;name&quot;:&quot;Patrick Ewing&quot;,&quot;ovr&quot;:94,&quot;off&quot;:95,&quot;def&quot;:98,&quot;size&quot;:99,&quot;shoot&quot;:84,&quot;ath&quot;:91,&quot;stam&quot;:98,&quot;handle&quot;:76,&quot;post&quot;:97,&quot;will&quot;:97,&quot;trait&quot;:&quot;Power Center&quot;,&quot;t&quot;:{&quot;drive&quot;:13,&quot;mid&quot;:20,&quot;three&quot;:1,&quot;post&quot;:64,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Walt Frazier&quot;,&quot;ovr&quot;:94,&quot;off&quot;:93,&quot;def&quot;:99,&quot;size&quot;:87,&quot;shoot&quot;:90,&quot;ath&quot;:94,&quot;stam&quot;:98,&quot;handle&quot;:96,&quot;post&quot;:82,&quot;will&quot;:98,&quot;trait&quot;:&quot;Lockdown Guard&quot;,&quot;t&quot;:{&quot;drive&quot;:26,&quot;mid&quot;:31,&quot;three&quot;:16,&quot;post&quot;:13,&quot;step&quot;:14}},{&quot;name&quot;:&quot;Kevin Garnett&quot;,&quot;ovr&quot;:97,&quot;off&quot;:95,&quot;def&quot;:100,&quot;size&quot;:99,&quot;shoot&quot;:91,&quot;ath&quot;:96,&quot;stam&quot;:100,&quot;handle&quot;:88,&quot;post&quot;:96,&quot;will&quot;:100,&quot;trait&quot;:&quot;Anything Is Possible&quot;,&quot;t&quot;:{&quot;drive&quot;:18,&quot;mid&quot;:30,&quot;three&quot;:4,&quot;post&quot;:44,&quot;step&quot;:4}},{&quot;name&quot;:&quot;George Gervin&quot;,&quot;ovr&quot;:94,&quot;off&quot;:99,&quot;def&quot;:84,&quot;size&quot;:91,&quot;shoot&quot;:97,&quot;ath&quot;:93,&quot;stam&quot;:96,&quot;handle&quot;:92,&quot;post&quot;:86,&quot;will&quot;:95,&quot;trait&quot;:&quot;Iceman Finger Roll&quot;,&quot;t&quot;:{&quot;drive&quot;:26,&quot;mid&quot;:42,&quot;three&quot;:15,&quot;post&quot;:9,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Hal Greer&quot;,&quot;ovr&quot;:91,&quot;off&quot;:95,&quot;def&quot;:90,&quot;size&quot;:84,&quot;shoot&quot;:93,&quot;ath&quot;:91,&quot;stam&quot;:97,&quot;handle&quot;:89,&quot;post&quot;:75,&quot;will&quot;:96,&quot;trait&quot;:&quot;Jump Shot Machine&quot;,&quot;t&quot;:{&quot;drive&quot;:24,&quot;mid&quot;:40,&quot;three&quot;:18,&quot;post&quot;:10,&quot;step&quot;:8}},{&quot;name&quot;:&quot;James Harden&quot;,&quot;ovr&quot;:96,&quot;off&quot;:100,&quot;def&quot;:84,&quot;size&quot;:91,&quot;shoot&quot;:96,&quot;ath&quot;:93,&quot;stam&quot;:97,&quot;handle&quot;:100,&quot;post&quot;:82,&quot;will&quot;:96,&quot;trait&quot;:&quot;Iso Maestro&quot;,&quot;t&quot;:{&quot;drive&quot;:35,&quot;mid&quot;:8,&quot;three&quot;:31,&quot;post&quot;:6,&quot;step&quot;:20}},{&quot;name&quot;:&quot;John Havlicek&quot;,&quot;ovr&quot;:94,&quot;off&quot;:94,&quot;def&quot;:97,&quot;size&quot;:91,&quot;shoot&quot;:90,&quot;ath&quot;:96,&quot;stam&quot;:100,&quot;handle&quot;:88,&quot;post&quot;:84,&quot;will&quot;:99,&quot;trait&quot;:&quot;Endless Motor&quot;,&quot;t&quot;:{&quot;drive&quot;:31,&quot;mid&quot;:27,&quot;three&quot;:17,&quot;post&quot;:18,&quot;step&quot;:7}},{&quot;name&quot;:&quot;Elvin Hayes&quot;,&quot;ovr&quot;:94,&quot;off&quot;:95,&quot;def&quot;:96,&quot;size&quot;:98,&quot;shoot&quot;:86,&quot;ath&quot;:94,&quot;stam&quot;:100,&quot;handle&quot;:77,&quot;post&quot;:98,&quot;will&quot;:98,&quot;trait&quot;:&quot;Big E&quot;,&quot;t&quot;:{&quot;drive&quot;:11,&quot;mid&quot;:26,&quot;three&quot;:1,&quot;post&quot;:60,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Allen Iverson&quot;,&quot;ovr&quot;:93,&quot;off&quot;:98,&quot;def&quot;:84,&quot;size&quot;:76,&quot;shoot&quot;:88,&quot;ath&quot;:99,&quot;stam&quot;:97,&quot;handle&quot;:100,&quot;post&quot;:68,&quot;will&quot;:99,&quot;trait&quot;:&quot;Fearless Attack&quot;,&quot;t&quot;:{&quot;drive&quot;:45,&quot;mid&quot;:26,&quot;three&quot;:14,&quot;post&quot;:2,&quot;step&quot;:13}},{&quot;name&quot;:&quot;LeBron James&quot;,&quot;ovr&quot;:99,&quot;off&quot;:98,&quot;def&quot;:96,&quot;size&quot;:99,&quot;shoot&quot;:90,&quot;ath&quot;:98,&quot;stam&quot;:99,&quot;handle&quot;:96,&quot;post&quot;:94,&quot;will&quot;:98,&quot;trait&quot;:&quot;Freight Train&quot;,&quot;t&quot;:{&quot;drive&quot;:42,&quot;mid&quot;:15,&quot;three&quot;:18,&quot;post&quot;:20,&quot;step&quot;:5}},{&quot;name&quot;:&quot;Magic Johnson&quot;,&quot;ovr&quot;:95,&quot;off&quot;:94,&quot;def&quot;:88,&quot;size&quot;:96,&quot;shoot&quot;:82,&quot;ath&quot;:91,&quot;stam&quot;:97,&quot;handle&quot;:98,&quot;post&quot;:93,&quot;will&quot;:96,&quot;trait&quot;:&quot;Mismatch Hunter&quot;,&quot;t&quot;:{&quot;drive&quot;:30,&quot;mid&quot;:12,&quot;three&quot;:8,&quot;post&quot;:42,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Sam Jones&quot;,&quot;ovr&quot;:91,&quot;off&quot;:96,&quot;def&quot;:88,&quot;size&quot;:86,&quot;shoot&quot;:95,&quot;ath&quot;:89,&quot;stam&quot;:96,&quot;handle&quot;:87,&quot;post&quot;:78,&quot;will&quot;:97,&quot;trait&quot;:&quot;Bank Shot&quot;,&quot;t&quot;:{&quot;drive&quot;:22,&quot;mid&quot;:42,&quot;three&quot;:21,&quot;post&quot;:9,&quot;step&quot;:6}},{&quot;name&quot;:&quot;Michael Jordan&quot;,&quot;ovr&quot;:99,&quot;off&quot;:99,&quot;def&quot;:98,&quot;size&quot;:92,&quot;shoot&quot;:95,&quot;ath&quot;:99,&quot;stam&quot;:99,&quot;handle&quot;:97,&quot;post&quot;:95,&quot;will&quot;:100,&quot;trait&quot;:&quot;Takeover&quot;,&quot;t&quot;:{&quot;drive&quot;:34,&quot;mid&quot;:38,&quot;three&quot;:10,&quot;post&quot;:14,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Jason Kidd&quot;,&quot;ovr&quot;:92,&quot;off&quot;:90,&quot;def&quot;:98,&quot;size&quot;:90,&quot;shoot&quot;:84,&quot;ath&quot;:93,&quot;stam&quot;:98,&quot;handle&quot;:99,&quot;post&quot;:82,&quot;will&quot;:97,&quot;trait&quot;:&quot;Floor General&quot;,&quot;t&quot;:{&quot;drive&quot;:29,&quot;mid&quot;:19,&quot;three&quot;:22,&quot;post&quot;:17,&quot;step&quot;:13}},{&quot;name&quot;:&quot;Kawhi Leonard&quot;,&quot;ovr&quot;:94,&quot;off&quot;:96,&quot;def&quot;:100,&quot;size&quot;:94,&quot;shoot&quot;:93,&quot;ath&quot;:93,&quot;stam&quot;:95,&quot;handle&quot;:93,&quot;post&quot;:92,&quot;will&quot;:96,&quot;trait&quot;:&quot;Two-Way Lock&quot;,&quot;t&quot;:{&quot;drive&quot;:24,&quot;mid&quot;:37,&quot;three&quot;:18,&quot;post&quot;:15,&quot;step&quot;:6}},{&quot;name&quot;:&quot;Damian Lillard&quot;,&quot;ovr&quot;:94,&quot;off&quot;:99,&quot;def&quot;:80,&quot;size&quot;:82,&quot;shoot&quot;:99,&quot;ath&quot;:94,&quot;stam&quot;:97,&quot;handle&quot;:98,&quot;post&quot;:66,&quot;will&quot;:98,&quot;trait&quot;:&quot;Logo Range&quot;,&quot;t&quot;:{&quot;drive&quot;:32,&quot;mid&quot;:12,&quot;three&quot;:34,&quot;post&quot;:2,&quot;step&quot;:20}},{&quot;name&quot;:&quot;Jerry Lucas&quot;,&quot;ovr&quot;:91,&quot;off&quot;:91,&quot;def&quot;:91,&quot;size&quot;:96,&quot;shoot&quot;:88,&quot;ath&quot;:88,&quot;stam&quot;:97,&quot;handle&quot;:78,&quot;post&quot;:94,&quot;will&quot;:95,&quot;trait&quot;:&quot;Glass and Range&quot;,&quot;t&quot;:{&quot;drive&quot;:13,&quot;mid&quot;:24,&quot;three&quot;:12,&quot;post&quot;:47,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Karl Malone&quot;,&quot;ovr&quot;:96,&quot;off&quot;:98,&quot;def&quot;:95,&quot;size&quot;:99,&quot;shoot&quot;:88,&quot;ath&quot;:97,&quot;stam&quot;:100,&quot;handle&quot;:84,&quot;post&quot;:99,&quot;will&quot;:98,&quot;trait&quot;:&quot;Mailman Power&quot;,&quot;t&quot;:{&quot;drive&quot;:30,&quot;mid&quot;:20,&quot;three&quot;:1,&quot;post&quot;:46,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Moses Malone&quot;,&quot;ovr&quot;:97,&quot;off&quot;:98,&quot;def&quot;:96,&quot;size&quot;:100,&quot;shoot&quot;:72,&quot;ath&quot;:96,&quot;stam&quot;:100,&quot;handle&quot;:70,&quot;post&quot;:100,&quot;will&quot;:99,&quot;trait&quot;:&quot;Offensive Glass&quot;,&quot;t&quot;:{&quot;drive&quot;:15,&quot;mid&quot;:5,&quot;three&quot;:0,&quot;post&quot;:78,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Pete Maravich&quot;,&quot;ovr&quot;:93,&quot;off&quot;:99,&quot;def&quot;:78,&quot;size&quot;:85,&quot;shoot&quot;:97,&quot;ath&quot;:91,&quot;stam&quot;:96,&quot;handle&quot;:100,&quot;post&quot;:70,&quot;will&quot;:96,&quot;trait&quot;:&quot;Pistol Creativity&quot;,&quot;t&quot;:{&quot;drive&quot;:25,&quot;mid&quot;:31,&quot;three&quot;:25,&quot;post&quot;:3,&quot;step&quot;:16}},{&quot;name&quot;:&quot;Bob McAdoo&quot;,&quot;ovr&quot;:95,&quot;off&quot;:99,&quot;def&quot;:90,&quot;size&quot;:96,&quot;shoot&quot;:95,&quot;ath&quot;:94,&quot;stam&quot;:97,&quot;handle&quot;:86,&quot;post&quot;:94,&quot;will&quot;:95,&quot;trait&quot;:&quot;Face-Up Center&quot;,&quot;t&quot;:{&quot;drive&quot;:18,&quot;mid&quot;:35,&quot;three&quot;:9,&quot;post&quot;:34,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Kevin McHale&quot;,&quot;ovr&quot;:94,&quot;off&quot;:96,&quot;def&quot;:98,&quot;size&quot;:97,&quot;shoot&quot;:87,&quot;ath&quot;:85,&quot;stam&quot;:97,&quot;handle&quot;:81,&quot;post&quot;:100,&quot;will&quot;:97,&quot;trait&quot;:&quot;Torture Chamber&quot;,&quot;t&quot;:{&quot;drive&quot;:9,&quot;mid&quot;:15,&quot;three&quot;:0,&quot;post&quot;:74,&quot;step&quot;:2}},{&quot;name&quot;:&quot;George Mikan&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:97,&quot;size&quot;:100,&quot;shoot&quot;:70,&quot;ath&quot;:86,&quot;stam&quot;:96,&quot;handle&quot;:66,&quot;post&quot;:100,&quot;will&quot;:99,&quot;trait&quot;:&quot;First Dominant Big&quot;,&quot;t&quot;:{&quot;drive&quot;:10,&quot;mid&quot;:5,&quot;three&quot;:0,&quot;post&quot;:83,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Reggie Miller&quot;,&quot;ovr&quot;:92,&quot;off&quot;:98,&quot;def&quot;:82,&quot;size&quot;:89,&quot;shoot&quot;:100,&quot;ath&quot;:89,&quot;stam&quot;:97,&quot;handle&quot;:88,&quot;post&quot;:72,&quot;will&quot;:99,&quot;trait&quot;:&quot;Killer Movement&quot;,&quot;t&quot;:{&quot;drive&quot;:14,&quot;mid&quot;:15,&quot;three&quot;:51,&quot;post&quot;:4,&quot;step&quot;:16}},{&quot;name&quot;:&quot;Earl Monroe&quot;,&quot;ovr&quot;:91,&quot;off&quot;:96,&quot;def&quot;:83,&quot;size&quot;:84,&quot;shoot&quot;:91,&quot;ath&quot;:95,&quot;stam&quot;:95,&quot;handle&quot;:99,&quot;post&quot;:77,&quot;will&quot;:95,&quot;trait&quot;:&quot;Spin Doctor&quot;,&quot;t&quot;:{&quot;drive&quot;:37,&quot;mid&quot;:31,&quot;three&quot;:12,&quot;post&quot;:7,&quot;step&quot;:13}},{&quot;name&quot;:&quot;Steve Nash&quot;,&quot;ovr&quot;:93,&quot;off&quot;:97,&quot;def&quot;:75,&quot;size&quot;:80,&quot;shoot&quot;:99,&quot;ath&quot;:88,&quot;stam&quot;:97,&quot;handle&quot;:100,&quot;post&quot;:63,&quot;will&quot;:96,&quot;trait&quot;:&quot;Nash Efficiency&quot;,&quot;t&quot;:{&quot;drive&quot;:24,&quot;mid&quot;:35,&quot;three&quot;:24,&quot;post&quot;:1,&quot;step&quot;:16}},{&quot;name&quot;:&quot;Dirk Nowitzki&quot;,&quot;ovr&quot;:94,&quot;off&quot;:98,&quot;def&quot;:85,&quot;size&quot;:96,&quot;shoot&quot;:99,&quot;ath&quot;:78,&quot;stam&quot;:96,&quot;handle&quot;:87,&quot;post&quot;:97,&quot;will&quot;:96,&quot;trait&quot;:&quot;One-Leg Fade&quot;,&quot;t&quot;:{&quot;drive&quot;:8,&quot;mid&quot;:41,&quot;three&quot;:24,&quot;post&quot;:23,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Shaquille O’Neal&quot;,&quot;ovr&quot;:97,&quot;off&quot;:99,&quot;def&quot;:95,&quot;size&quot;:100,&quot;shoot&quot;:58,&quot;ath&quot;:96,&quot;stam&quot;:95,&quot;handle&quot;:73,&quot;post&quot;:100,&quot;will&quot;:97,&quot;trait&quot;:&quot;Paint Dominance&quot;,&quot;t&quot;:{&quot;drive&quot;:20,&quot;mid&quot;:2,&quot;three&quot;:0,&quot;post&quot;:75,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Hakeem Olajuwon&quot;,&quot;ovr&quot;:97,&quot;off&quot;:97,&quot;def&quot;:100,&quot;size&quot;:97,&quot;shoot&quot;:83,&quot;ath&quot;:95,&quot;stam&quot;:98,&quot;handle&quot;:84,&quot;post&quot;:100,&quot;will&quot;:97,&quot;trait&quot;:&quot;Dream Shake&quot;,&quot;t&quot;:{&quot;drive&quot;:10,&quot;mid&quot;:18,&quot;three&quot;:1,&quot;post&quot;:68,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Robert Parish&quot;,&quot;ovr&quot;:92,&quot;off&quot;:92,&quot;def&quot;:96,&quot;size&quot;:99,&quot;shoot&quot;:78,&quot;ath&quot;:89,&quot;stam&quot;:99,&quot;handle&quot;:70,&quot;post&quot;:95,&quot;will&quot;:96,&quot;trait&quot;:&quot;Chief&quot;,&quot;t&quot;:{&quot;drive&quot;:9,&quot;mid&quot;:15,&quot;three&quot;:0,&quot;post&quot;:74,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Chris Paul&quot;,&quot;ovr&quot;:93,&quot;off&quot;:95,&quot;def&quot;:97,&quot;size&quot;:77,&quot;shoot&quot;:93,&quot;ath&quot;:88,&quot;stam&quot;:96,&quot;handle&quot;:100,&quot;post&quot;:68,&quot;will&quot;:97,&quot;trait&quot;:&quot;Control the Possession&quot;,&quot;t&quot;:{&quot;drive&quot;:25,&quot;mid&quot;:38,&quot;three&quot;:17,&quot;post&quot;:2,&quot;step&quot;:18}},{&quot;name&quot;:&quot;Gary Payton&quot;,&quot;ovr&quot;:94,&quot;off&quot;:93,&quot;def&quot;:100,&quot;size&quot;:88,&quot;shoot&quot;:86,&quot;ath&quot;:94,&quot;stam&quot;:99,&quot;handle&quot;:95,&quot;post&quot;:88,&quot;will&quot;:100,&quot;trait&quot;:&quot;The Glove&quot;,&quot;t&quot;:{&quot;drive&quot;:28,&quot;mid&quot;:27,&quot;three&quot;:12,&quot;post&quot;:23,&quot;step&quot;:10}},{&quot;name&quot;:&quot;Bob Pettit&quot;,&quot;ovr&quot;:95,&quot;off&quot;:98,&quot;def&quot;:94,&quot;size&quot;:98,&quot;shoot&quot;:90,&quot;ath&quot;:92,&quot;stam&quot;:100,&quot;handle&quot;:82,&quot;post&quot;:97,&quot;will&quot;:99,&quot;trait&quot;:&quot;Relentless Scorer&quot;,&quot;t&quot;:{&quot;drive&quot;:19,&quot;mid&quot;:30,&quot;three&quot;:4,&quot;post&quot;:43,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Paul Pierce&quot;,&quot;ovr&quot;:93,&quot;off&quot;:97,&quot;def&quot;:91,&quot;size&quot;:91,&quot;shoot&quot;:96,&quot;ath&quot;:86,&quot;stam&quot;:96,&quot;handle&quot;:92,&quot;post&quot;:90,&quot;will&quot;:98,&quot;trait&quot;:&quot;The Truth&quot;,&quot;t&quot;:{&quot;drive&quot;:22,&quot;mid&quot;:30,&quot;three&quot;:26,&quot;post&quot;:14,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Scottie Pippen&quot;,&quot;ovr&quot;:95,&quot;off&quot;:94,&quot;def&quot;:100,&quot;size&quot;:95,&quot;shoot&quot;:86,&quot;ath&quot;:99,&quot;stam&quot;:99,&quot;handle&quot;:94,&quot;post&quot;:84,&quot;will&quot;:98,&quot;trait&quot;:&quot;Wing Lockdown&quot;,&quot;t&quot;:{&quot;drive&quot;:37,&quot;mid&quot;:22,&quot;three&quot;:11,&quot;post&quot;:23,&quot;step&quot;:7}},{&quot;name&quot;:&quot;Willis Reed&quot;,&quot;ovr&quot;:93,&quot;off&quot;:93,&quot;def&quot;:98,&quot;size&quot;:98,&quot;shoot&quot;:82,&quot;ath&quot;:91,&quot;stam&quot;:98,&quot;handle&quot;:75,&quot;post&quot;:96,&quot;will&quot;:100,&quot;trait&quot;:&quot;Captain&quot;,&quot;t&quot;:{&quot;drive&quot;:13,&quot;mid&quot;:20,&quot;three&quot;:0,&quot;post&quot;:65,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Oscar Robertson&quot;,&quot;ovr&quot;:96,&quot;off&quot;:97,&quot;def&quot;:91,&quot;size&quot;:94,&quot;shoot&quot;:87,&quot;ath&quot;:94,&quot;stam&quot;:97,&quot;handle&quot;:96,&quot;post&quot;:92,&quot;will&quot;:97,&quot;trait&quot;:&quot;Big Guard&quot;,&quot;t&quot;:{&quot;drive&quot;:34,&quot;mid&quot;:26,&quot;three&quot;:8,&quot;post&quot;:24,&quot;step&quot;:8}},{&quot;name&quot;:&quot;David Robinson&quot;,&quot;ovr&quot;:98,&quot;off&quot;:97,&quot;def&quot;:100,&quot;size&quot;:100,&quot;shoot&quot;:86,&quot;ath&quot;:100,&quot;stam&quot;:98,&quot;handle&quot;:85,&quot;post&quot;:97,&quot;will&quot;:97,&quot;trait&quot;:&quot;The Admiral&quot;,&quot;t&quot;:{&quot;drive&quot;:27,&quot;mid&quot;:17,&quot;three&quot;:0,&quot;post&quot;:53,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Dennis Rodman&quot;,&quot;ovr&quot;:89,&quot;off&quot;:72,&quot;def&quot;:100,&quot;size&quot;:96,&quot;shoot&quot;:58,&quot;ath&quot;:98,&quot;stam&quot;:100,&quot;handle&quot;:70,&quot;post&quot;:78,&quot;will&quot;:100,&quot;trait&quot;:&quot;The Worm&quot;,&quot;t&quot;:{&quot;drive&quot;:17,&quot;mid&quot;:7,&quot;three&quot;:0,&quot;post&quot;:73,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Bill Russell&quot;,&quot;ovr&quot;:94,&quot;off&quot;:82,&quot;def&quot;:100,&quot;size&quot;:98,&quot;shoot&quot;:62,&quot;ath&quot;:97,&quot;stam&quot;:100,&quot;handle&quot;:72,&quot;post&quot;:88,&quot;will&quot;:100,&quot;trait&quot;:&quot;Defensive Wall&quot;,&quot;t&quot;:{&quot;drive&quot;:18,&quot;mid&quot;:6,&quot;three&quot;:0,&quot;post&quot;:73,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Dolph Schayes&quot;,&quot;ovr&quot;:92,&quot;off&quot;:96,&quot;def&quot;:90,&quot;size&quot;:97,&quot;shoot&quot;:91,&quot;ath&quot;:88,&quot;stam&quot;:99,&quot;handle&quot;:80,&quot;post&quot;:94,&quot;will&quot;:98,&quot;trait&quot;:&quot;Stretch Pioneer&quot;,&quot;t&quot;:{&quot;drive&quot;:16,&quot;mid&quot;:29,&quot;three&quot;:16,&quot;post&quot;:35,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Bill Sharman&quot;,&quot;ovr&quot;:90,&quot;off&quot;:96,&quot;def&quot;:88,&quot;size&quot;:82,&quot;shoot&quot;:97,&quot;ath&quot;:88,&quot;stam&quot;:96,&quot;handle&quot;:86,&quot;post&quot;:67,&quot;will&quot;:96,&quot;trait&quot;:&quot;Pure Jumper&quot;,&quot;t&quot;:{&quot;drive&quot;:20,&quot;mid&quot;:43,&quot;three&quot;:23,&quot;post&quot;:4,&quot;step&quot;:10}},{&quot;name&quot;:&quot;John Stockton&quot;,&quot;ovr&quot;:92,&quot;off&quot;:92,&quot;def&quot;:98,&quot;size&quot;:78,&quot;shoot&quot;:95,&quot;ath&quot;:84,&quot;stam&quot;:99,&quot;handle&quot;:100,&quot;post&quot;:63,&quot;will&quot;:98,&quot;trait&quot;:&quot;Surgical&quot;,&quot;t&quot;:{&quot;drive&quot;:24,&quot;mid&quot;:36,&quot;three&quot;:19,&quot;post&quot;:2,&quot;step&quot;:19}},{&quot;name&quot;:&quot;Isiah Thomas&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:91,&quot;size&quot;:79,&quot;shoot&quot;:90,&quot;ath&quot;:97,&quot;stam&quot;:98,&quot;handle&quot;:100,&quot;post&quot;:70,&quot;will&quot;:100,&quot;trait&quot;:&quot;Bad Boy Clutch&quot;,&quot;t&quot;:{&quot;drive&quot;:39,&quot;mid&quot;:28,&quot;three&quot;:13,&quot;post&quot;:3,&quot;step&quot;:17}},{&quot;name&quot;:&quot;Nate Thurmond&quot;,&quot;ovr&quot;:92,&quot;off&quot;:87,&quot;def&quot;:100,&quot;size&quot;:100,&quot;shoot&quot;:70,&quot;ath&quot;:93,&quot;stam&quot;:100,&quot;handle&quot;:69,&quot;post&quot;:92,&quot;will&quot;:100,&quot;trait&quot;:&quot;Paint Fortress&quot;,&quot;t&quot;:{&quot;drive&quot;:9,&quot;mid&quot;:8,&quot;three&quot;:0,&quot;post&quot;:81,&quot;step&quot;:2}},{&quot;name&quot;:&quot;Wes Unseld&quot;,&quot;ovr&quot;:90,&quot;off&quot;:84,&quot;def&quot;:96,&quot;size&quot;:96,&quot;shoot&quot;:75,&quot;ath&quot;:91,&quot;stam&quot;:99,&quot;handle&quot;:77,&quot;post&quot;:88,&quot;will&quot;:100,&quot;trait&quot;:&quot;Brick Wall&quot;,&quot;t&quot;:{&quot;drive&quot;:17,&quot;mid&quot;:12,&quot;three&quot;:0,&quot;post&quot;:68,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Dwyane Wade&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:96,&quot;size&quot;:91,&quot;shoot&quot;:82,&quot;ath&quot;:99,&quot;stam&quot;:96,&quot;handle&quot;:96,&quot;post&quot;:86,&quot;will&quot;:98,&quot;trait&quot;:&quot;Slasher&quot;,&quot;t&quot;:{&quot;drive&quot;:47,&quot;mid&quot;:25,&quot;three&quot;:8,&quot;post&quot;:12,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Bill Walton&quot;,&quot;ovr&quot;:95,&quot;off&quot;:92,&quot;def&quot;:100,&quot;size&quot;:100,&quot;shoot&quot;:79,&quot;ath&quot;:94,&quot;stam&quot;:95,&quot;handle&quot;:82,&quot;post&quot;:97,&quot;will&quot;:99,&quot;trait&quot;:&quot;Peak Walton&quot;,&quot;t&quot;:{&quot;drive&quot;:14,&quot;mid&quot;:17,&quot;three&quot;:0,&quot;post&quot;:66,&quot;step&quot;:3}},{&quot;name&quot;:&quot;Jerry West&quot;,&quot;ovr&quot;:95,&quot;off&quot;:97,&quot;def&quot;:96,&quot;size&quot;:87,&quot;shoot&quot;:95,&quot;ath&quot;:90,&quot;stam&quot;:97,&quot;handle&quot;:95,&quot;post&quot;:80,&quot;will&quot;:99,&quot;trait&quot;:&quot;Mr. Clutch&quot;,&quot;t&quot;:{&quot;drive&quot;:25,&quot;mid&quot;:34,&quot;three&quot;:23,&quot;post&quot;:8,&quot;step&quot;:10}},{&quot;name&quot;:&quot;Russell Westbrook&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:86,&quot;size&quot;:88,&quot;shoot&quot;:74,&quot;ath&quot;:100,&quot;stam&quot;:100,&quot;handle&quot;:98,&quot;post&quot;:80,&quot;will&quot;:100,&quot;trait&quot;:&quot;Full Throttle&quot;,&quot;t&quot;:{&quot;drive&quot;:55,&quot;mid&quot;:16,&quot;three&quot;:8,&quot;post&quot;:8,&quot;step&quot;:13}},{&quot;name&quot;:&quot;Lenny Wilkens&quot;,&quot;ovr&quot;:90,&quot;off&quot;:92,&quot;def&quot;:90,&quot;size&quot;:83,&quot;shoot&quot;:86,&quot;ath&quot;:91,&quot;stam&quot;:97,&quot;handle&quot;:96,&quot;post&quot;:70,&quot;will&quot;:97,&quot;trait&quot;:&quot;Left-Handed Craft&quot;,&quot;t&quot;:{&quot;drive&quot;:33,&quot;mid&quot;:32,&quot;three&quot;:14,&quot;post&quot;:8,&quot;step&quot;:13}},{&quot;name&quot;:&quot;Dominique Wilkins&quot;,&quot;ovr&quot;:95,&quot;off&quot;:99,&quot;def&quot;:86,&quot;size&quot;:94,&quot;shoot&quot;:88,&quot;ath&quot;:100,&quot;stam&quot;:97,&quot;handle&quot;:92,&quot;post&quot;:91,&quot;will&quot;:98,&quot;trait&quot;:&quot;Human Highlight&quot;,&quot;t&quot;:{&quot;drive&quot;:44,&quot;mid&quot;:21,&quot;three&quot;:8,&quot;post&quot;:20,&quot;step&quot;:7}},{&quot;name&quot;:&quot;James Worthy&quot;,&quot;ovr&quot;:93,&quot;off&quot;:96,&quot;def&quot;:91,&quot;size&quot;:94,&quot;shoot&quot;:87,&quot;ath&quot;:98,&quot;stam&quot;:97,&quot;handle&quot;:89,&quot;post&quot;:93,&quot;will&quot;:96,&quot;trait&quot;:&quot;Big Game James&quot;,&quot;t&quot;:{&quot;drive&quot;:38,&quot;mid&quot;:20,&quot;three&quot;:4,&quot;post&quot;:34,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Nikola Jokić&quot;,&quot;ovr&quot;:97,&quot;off&quot;:100,&quot;def&quot;:87,&quot;size&quot;:99,&quot;shoot&quot;:96,&quot;ath&quot;:82,&quot;stam&quot;:97,&quot;handle&quot;:96,&quot;post&quot;:99,&quot;will&quot;:98,&quot;trait&quot;:&quot;Surgical&quot;,&quot;t&quot;:{&quot;drive&quot;:12,&quot;mid&quot;:20,&quot;three&quot;:15,&quot;post&quot;:48,&quot;step&quot;:5}},{&quot;name&quot;:&quot;Luka Dončić&quot;,&quot;ovr&quot;:97,&quot;off&quot;:100,&quot;def&quot;:85,&quot;size&quot;:94,&quot;shoot&quot;:96,&quot;ath&quot;:89,&quot;stam&quot;:96,&quot;handle&quot;:100,&quot;post&quot;:94,&quot;will&quot;:98,&quot;trait&quot;:&quot;Mismatch Hunter&quot;,&quot;t&quot;:{&quot;drive&quot;:28,&quot;mid&quot;:18,&quot;three&quot;:25,&quot;post&quot;:15,&quot;step&quot;:14}},{&quot;name&quot;:&quot;Shai Gilgeous-Alexander&quot;,&quot;ovr&quot;:97,&quot;off&quot;:99,&quot;def&quot;:94,&quot;size&quot;:91,&quot;shoot&quot;:95,&quot;ath&quot;:96,&quot;stam&quot;:99,&quot;handle&quot;:99,&quot;post&quot;:87,&quot;will&quot;:99,&quot;trait&quot;:&quot;Surgical&quot;,&quot;t&quot;:{&quot;drive&quot;:36,&quot;mid&quot;:32,&quot;three&quot;:14,&quot;post&quot;:8,&quot;step&quot;:10}},{&quot;name&quot;:&quot;Jayson Tatum&quot;,&quot;ovr&quot;:96,&quot;off&quot;:97,&quot;def&quot;:95,&quot;size&quot;:95,&quot;shoot&quot;:94,&quot;ath&quot;:95,&quot;stam&quot;:98,&quot;handle&quot;:94,&quot;post&quot;:90,&quot;will&quot;:96,&quot;trait&quot;:&quot;Two-Way Length&quot;,&quot;t&quot;:{&quot;drive&quot;:25,&quot;mid&quot;:20,&quot;three&quot;:28,&quot;post&quot;:14,&quot;step&quot;:13}},{&quot;name&quot;:&quot;Joel Embiid&quot;,&quot;ovr&quot;:97,&quot;off&quot;:99,&quot;def&quot;:97,&quot;size&quot;:100,&quot;shoot&quot;:91,&quot;ath&quot;:93,&quot;stam&quot;:91,&quot;handle&quot;:86,&quot;post&quot;:100,&quot;will&quot;:95,&quot;trait&quot;:&quot;Paint Fortress&quot;,&quot;t&quot;:{&quot;drive&quot;:15,&quot;mid&quot;:23,&quot;three&quot;:12,&quot;post&quot;:46,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Anthony Edwards&quot;,&quot;ovr&quot;:95,&quot;off&quot;:97,&quot;def&quot;:92,&quot;size&quot;:91,&quot;shoot&quot;:91,&quot;ath&quot;:100,&quot;stam&quot;:98,&quot;handle&quot;:96,&quot;post&quot;:84,&quot;will&quot;:98,&quot;trait&quot;:&quot;Above the Rim&quot;,&quot;t&quot;:{&quot;drive&quot;:40,&quot;mid&quot;:18,&quot;three&quot;:20,&quot;post&quot;:8,&quot;step&quot;:14}},{&quot;name&quot;:&quot;Devin Booker&quot;,&quot;ovr&quot;:94,&quot;off&quot;:98,&quot;def&quot;:88,&quot;size&quot;:90,&quot;shoot&quot;:97,&quot;ath&quot;:90,&quot;stam&quot;:97,&quot;handle&quot;:96,&quot;post&quot;:86,&quot;will&quot;:96,&quot;trait&quot;:&quot;Pure Jumper&quot;,&quot;t&quot;:{&quot;drive&quot;:22,&quot;mid&quot;:38,&quot;three&quot;:24,&quot;post&quot;:7,&quot;step&quot;:9}},{&quot;name&quot;:&quot;Donovan Mitchell&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:87,&quot;size&quot;:84,&quot;shoot&quot;:94,&quot;ath&quot;:98,&quot;stam&quot;:96,&quot;handle&quot;:97,&quot;post&quot;:78,&quot;will&quot;:96,&quot;trait&quot;:&quot;Attack Guard&quot;,&quot;t&quot;:{&quot;drive&quot;:38,&quot;mid&quot;:16,&quot;three&quot;:25,&quot;post&quot;:5,&quot;step&quot;:16}},{&quot;name&quot;:&quot;Jalen Brunson&quot;,&quot;ovr&quot;:94,&quot;off&quot;:97,&quot;def&quot;:84,&quot;size&quot;:80,&quot;shoot&quot;:95,&quot;ath&quot;:89,&quot;stam&quot;:98,&quot;handle&quot;:99,&quot;post&quot;:84,&quot;will&quot;:98,&quot;trait&quot;:&quot;Mismatch Hunter&quot;,&quot;t&quot;:{&quot;drive&quot;:34,&quot;mid&quot;:30,&quot;three&quot;:15,&quot;post&quot;:10,&quot;step&quot;:11}},{&quot;name&quot;:&quot;Jaylen Brown&quot;,&quot;ovr&quot;:94,&quot;off&quot;:95,&quot;def&quot;:96,&quot;size&quot;:93,&quot;shoot&quot;:90,&quot;ath&quot;:98,&quot;stam&quot;:98,&quot;handle&quot;:91,&quot;post&quot;:87,&quot;will&quot;:96,&quot;trait&quot;:&quot;Two-Way Length&quot;,&quot;t&quot;:{&quot;drive&quot;:37,&quot;mid&quot;:18,&quot;three&quot;:20,&quot;post&quot;:16,&quot;step&quot;:9}},{&quot;name&quot;:&quot;Victor Wembanyama&quot;,&quot;ovr&quot;:97,&quot;off&quot;:96,&quot;def&quot;:100,&quot;size&quot;:100,&quot;shoot&quot;:91,&quot;ath&quot;:96,&quot;stam&quot;:93,&quot;handle&quot;:89,&quot;post&quot;:93,&quot;will&quot;:96,&quot;trait&quot;:&quot;Paint Fortress&quot;,&quot;t&quot;:{&quot;drive&quot;:20,&quot;mid&quot;:20,&quot;three&quot;:18,&quot;post&quot;:36,&quot;step&quot;:6}},{&quot;name&quot;:&quot;Cade Cunningham&quot;,&quot;ovr&quot;:94,&quot;off&quot;:96,&quot;def&quot;:88,&quot;size&quot;:92,&quot;shoot&quot;:90,&quot;ath&quot;:90,&quot;stam&quot;:96,&quot;handle&quot;:97,&quot;post&quot;:88,&quot;will&quot;:95,&quot;trait&quot;:&quot;Big Guard&quot;,&quot;t&quot;:{&quot;drive&quot;:30,&quot;mid&quot;:25,&quot;three&quot;:18,&quot;post&quot;:15,&quot;step&quot;:12}},{&quot;name&quot;:&quot;Tyrese Maxey&quot;,&quot;ovr&quot;:93,&quot;off&quot;:96,&quot;def&quot;:85,&quot;size&quot;:80,&quot;shoot&quot;:94,&quot;ath&quot;:99,&quot;stam&quot;:97,&quot;handle&quot;:97,&quot;post&quot;:70,&quot;will&quot;:95,&quot;trait&quot;:&quot;Full Throttle&quot;,&quot;t&quot;:{&quot;drive&quot;:42,&quot;mid&quot;:18,&quot;three&quot;:25,&quot;post&quot;:2,&quot;step&quot;:13}},{&quot;name&quot;:&quot;Jalen Williams&quot;,&quot;ovr&quot;:93,&quot;off&quot;:94,&quot;def&quot;:95,&quot;size&quot;:92,&quot;shoot&quot;:92,&quot;ath&quot;:95,&quot;stam&quot;:96,&quot;handle&quot;:94,&quot;post&quot;:85,&quot;will&quot;:94,&quot;trait&quot;:&quot;Two-Way Length&quot;,&quot;t&quot;:{&quot;drive&quot;:34,&quot;mid&quot;:24,&quot;three&quot;:18,&quot;post&quot;:15,&quot;step&quot;:9}},{&quot;name&quot;:&quot;Chet Holmgren&quot;,&quot;ovr&quot;:93,&quot;off&quot;:91,&quot;def&quot;:99,&quot;size&quot;:99,&quot;shoot&quot;:91,&quot;ath&quot;:90,&quot;stam&quot;:93,&quot;handle&quot;:84,&quot;post&quot;:89,&quot;will&quot;:94,&quot;trait&quot;:&quot;Paint Fortress&quot;,&quot;t&quot;:{&quot;drive&quot;:18,&quot;mid&quot;:20,&quot;three&quot;:20,&quot;post&quot;:38,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Tyrese Haliburton&quot;,&quot;ovr&quot;:93,&quot;off&quot;:96,&quot;def&quot;:82,&quot;size&quot;:88,&quot;shoot&quot;:96,&quot;ath&quot;:90,&quot;stam&quot;:96,&quot;handle&quot;:99,&quot;post&quot;:74,&quot;will&quot;:96,&quot;trait&quot;:&quot;Control the Possession&quot;,&quot;t&quot;:{&quot;drive&quot;:22,&quot;mid&quot;:15,&quot;three&quot;:34,&quot;post&quot;:2,&quot;step&quot;:27}},{&quot;name&quot;:&quot;Ja Morant&quot;,&quot;ovr&quot;:93,&quot;off&quot;:97,&quot;def&quot;:80,&quot;size&quot;:82,&quot;shoot&quot;:84,&quot;ath&quot;:100,&quot;stam&quot;:95,&quot;handle&quot;:99,&quot;post&quot;:72,&quot;will&quot;:96,&quot;trait&quot;:&quot;Above the Rim&quot;,&quot;t&quot;:{&quot;drive&quot;:52,&quot;mid&quot;:17,&quot;three&quot;:10,&quot;post&quot;:6,&quot;step&quot;:15}},{&quot;name&quot;:&quot;Cooper Flagg&quot;,&quot;ovr&quot;:91,&quot;off&quot;:92,&quot;def&quot;:92,&quot;size&quot;:93,&quot;shoot&quot;:87,&quot;ath&quot;:95,&quot;stam&quot;:94,&quot;handle&quot;:89,&quot;post&quot;:84,&quot;will&quot;:94,&quot;trait&quot;:&quot;Two-Way Length&quot;,&quot;t&quot;:{&quot;drive&quot;:35,&quot;mid&quot;:23,&quot;three&quot;:14,&quot;post&quot;:20,&quot;step&quot;:8}},{&quot;name&quot;:&quot;Dwight Howard&quot;,&quot;ovr&quot;:95,&quot;off&quot;:93,&quot;def&quot;:100,&quot;size&quot;:100,&quot;shoot&quot;:55,&quot;ath&quot;:99,&quot;stam&quot;:98,&quot;handle&quot;:72,&quot;post&quot;:95,&quot;will&quot;:96,&quot;trait&quot;:&quot;Paint Fortress&quot;,&quot;t&quot;:{&quot;drive&quot;:12,&quot;mid&quot;:4,&quot;three&quot;:0,&quot;post&quot;:80,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Pau Gasol&quot;,&quot;ovr&quot;:93,&quot;off&quot;:95,&quot;def&quot;:91,&quot;size&quot;:99,&quot;shoot&quot;:91,&quot;ath&quot;:85,&quot;stam&quot;:97,&quot;handle&quot;:86,&quot;post&quot;:96,&quot;will&quot;:95,&quot;trait&quot;:&quot;Glass and Range&quot;,&quot;t&quot;:{&quot;drive&quot;:10,&quot;mid&quot;:28,&quot;three&quot;:10,&quot;post&quot;:48,&quot;step&quot;:4}},{&quot;name&quot;:&quot;Tony Parker&quot;,&quot;ovr&quot;:92,&quot;off&quot;:96,&quot;def&quot;:84,&quot;size&quot;:78,&quot;shoot&quot;:91,&quot;ath&quot;:97,&quot;stam&quot;:98,&quot;handle&quot;:99,&quot;post&quot;:68,&quot;will&quot;:97,&quot;trait&quot;:&quot;Attack Guard&quot;,&quot;t&quot;:{&quot;drive&quot;:45,&quot;mid&quot;:30,&quot;three&quot;:8,&quot;post&quot;:5,&quot;step&quot;:12}},{&quot;name&quot;:&quot;Vince Carter&quot;,&quot;ovr&quot;:93,&quot;off&quot;:97,&quot;def&quot;:86,&quot;size&quot;:92,&quot;shoot&quot;:94,&quot;ath&quot;:100,&quot;stam&quot;:95,&quot;handle&quot;:95,&quot;post&quot;:87,&quot;will&quot;:94,&quot;trait&quot;:&quot;Human Highlight&quot;,&quot;t&quot;:{&quot;drive&quot;:34,&quot;mid&quot;:24,&quot;three&quot;:22,&quot;post&quot;:10,&quot;step&quot;:10}},{&quot;name&quot;:&quot;Tracy McGrady&quot;,&quot;ovr&quot;:96,&quot;off&quot;:99,&quot;def&quot;:88,&quot;size&quot;:94,&quot;shoot&quot;:95,&quot;ath&quot;:98,&quot;stam&quot;:96,&quot;handle&quot;:98,&quot;post&quot;:91,&quot;will&quot;:96,&quot;trait&quot;:&quot;Unblockable Release&quot;,&quot;t&quot;:{&quot;drive&quot;:30,&quot;mid&quot;:31,&quot;three&quot;:22,&quot;post&quot;:8,&quot;step&quot;:9}},{&quot;name&quot;:&quot;Manu Ginóbili&quot;,&quot;ovr&quot;:93,&quot;off&quot;:95,&quot;def&quot;:92,&quot;size&quot;:88,&quot;shoot&quot;:94,&quot;ath&quot;:92,&quot;stam&quot;:95,&quot;handle&quot;:97,&quot;post&quot;:78,&quot;will&quot;:98,&quot;trait&quot;:&quot;Wizard Handle&quot;,&quot;t&quot;:{&quot;drive&quot;:37,&quot;mid&quot;:15,&quot;three&quot;:24,&quot;post&quot;:6,&quot;step&quot;:18}}];
+
+const $=id=&gt;document.getElementById(id);
+let cpu=null,you=null,state=null,careerW=0,careerL=0,streak=0,loopToken=0,busy=false;
+let cpuBag=[],gameMode=&#x27;regular&#x27;,currentOptions=[],selectionRerolls=0,matchMeta=null,quickSim=false;
+
+function shuffleWithRng(a,rng=Math.random){
+ a=[...a];
+ for(let i=a.length-1;i&gt;0;i--){
+  const j=Math.floor(rng()*(i+1));
+  [a[i],a[j]]=[a[j],a[i]];
+ }
+ return a;
+}
+function shuffle(a){return shuffleWithRng(a,Math.random)}
+
+function hashSeed(str){
+ let h=2166136261&gt;&gt;&gt;0;
+ for(let i=0;i&lt;str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}
+ return h&gt;&gt;&gt;0;
+}
+function seededRng(seed){
+ let a=seed&gt;&gt;&gt;0;
+ return function(){
+  a|=0;a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a&gt;&gt;&gt;15,1|a);
+  t=t+Math.imul(t^t&gt;&gt;&gt;7,61|t)^t;
+  return ((t^t&gt;&gt;&gt;14)&gt;&gt;&gt;0)/4294967296;
+ }
+}
+function utcDateKey(d=new Date()){
+ return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(d.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
+}
+function sizeTier(p){return p.size&gt;=96?&#x27;big&#x27;:p.size&gt;=87?&#x27;wing&#x27;:&#x27;guard&#x27;}
+function styleTier(p){
+ const scores={
+  inside:(p.t.post||0)+(p.t.drive||0)*.55,
+  attack:(p.t.drive||0)+(p.ath-90)*1.4,
+  perimeter:(p.t.three||0)+(p.t.step||0)+(p.shoot-90)*1.2,
+  mid:(p.t.mid||0)+(p.shoot-90)*.65
+ };
+ return Object.entries(scores).sort((a,b)=&gt;b[1]-a[1])[0][0];
+}
+function diverseOptions(cpuPlayer,rng=Math.random){
+ const pool=shuffleWithRng(P.filter(p=&gt;p!==cpuPlayer),rng);
+ let picks=pool.slice(0,3);
+
+ // Keep the choices mostly random. About 85% of the time, fix only an
+ // excessively same-looking set (all same size tier or all same style).
+ if(rng()&lt;.85){
+  const sameSize=new Set(picks.map(sizeTier)).size===1;
+  const sameStyle=new Set(picks.map(styleTier)).size===1;
+  if(sameSize||sameStyle){
+   const replacement=pool.slice(3).find(p=&gt;{
+    const test=[picks[0],picks[1],p];
+    return new Set(test.map(sizeTier)).size&gt;1 &amp;&amp; new Set(test.map(styleTier)).size&gt;1;
+   });
+   if(replacement)picks[2]=replacement;
+  }
+ }
+ return picks;
+}
+function drawCpu(){
+ if(!cpuBag.length)cpuBag=shuffle(P);
+ return cpuBag.pop();
+}
+function dailyDraw(){
+ const date=utcDateKey();
+ const rng=seededRng(hashSeed(&#x27;GvG-Daily-&#x27;+date));
+ const ordered=shuffleWithRng(P,rng);
+ const cpuPlayer=ordered[0];
+ const choices=diverseOptions(cpuPlayer,rng);
+ return {date,cpuPlayer,choices};
+}
+function renderSelection(options){
+ currentOptions=options;
+ $(&#x27;cpuReveal&#x27;).innerHTML=`&lt;div&gt;&lt;span class=&quot;badge red&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;CPU PLAYER&lt;/span&gt;&lt;h3 style=&quot;margin:8px 0 4px&quot;&gt;${cpu.name}&lt;/h3&gt;&lt;div class=&quot;muted&quot;&gt;${cpu.trait} • OVR ${cpu.ovr}&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;rating&quot;&gt;${cpu.ovr}&lt;/div&gt;`;
+ $(&#x27;choices&#x27;).innerHTML=&#x27;&#x27;;
+ options.forEach(p=&gt;{
+  const b=document.createElement(&#x27;button&#x27;);
+  b.className=&#x27;choice&#x27;;
+  b.innerHTML=card(p,&#x27;blue&#x27;);
+  b.addEventListener(&#x27;click&#x27;,()=&gt;choose(p));
+  $(&#x27;choices&#x27;).appendChild(b);
+ });
+ $(&#x27;matchupPanel&#x27;).classList.add(&#x27;hidden&#x27;);
+ $(&#x27;gamePanel&#x27;).classList.add(&#x27;hidden&#x27;);
+ $(&#x27;pickPanel&#x27;).classList.remove(&#x27;hidden&#x27;);
+}
+
+function newRoll(mode=&#x27;regular&#x27;,resetRerolls=true){
+ stopLoop();busy=false;ballInFlight=false;state=null;you=null;
+ if(resetRerolls)selectionRerolls=0;
+ gameMode=mode;
+
+ if(mode===&#x27;daily&#x27;){
+  const daily=dailyDraw();
+  cpu=daily.cpuPlayer;
+  $(&#x27;pickTitle&#x27;).textContent=&#x27;Daily GOAT Challenge&#x27;;
+  $(&#x27;modeNote&#x27;).textContent=`Same matchup for everyone • ${daily.date} UTC • first ranked attempt counts`;
+  $(&#x27;reroll&#x27;).textContent=&#x27;Replay Daily Draw&#x27;;
+  $(&#x27;rerollHint&#x27;).textContent=&#x27;Daily choices stay the same.&#x27;;
+  renderSelection(daily.choices);
+ }else{
+  cpu=drawCpu();
+  $(&#x27;pickTitle&#x27;).textContent=&#x27;CPU reveals first&#x27;;
+  $(&#x27;modeNote&#x27;).textContent=&#x27;Random opponent • three mostly-random, lightly diversified counters&#x27;;
+  $(&#x27;reroll&#x27;).textContent=&#x27;New matchup&#x27;;
+  $(&#x27;rerollHint&#x27;).textContent=selectionRerolls?&#x27;This matchup will be unranked because you rerolled.&#x27;:&#x27;Rerolling makes the next game unranked.&#x27;;
+  renderSelection(diverseOptions(cpu));
+ }
+}
+
+function rerollSelection(){
+ if(gameMode===&#x27;daily&#x27;){
+  newRoll(&#x27;daily&#x27;,false);
+ }else{
+  selectionRerolls++;
+  newRoll(&#x27;regular&#x27;,false);
+  $(&#x27;rerollHint&#x27;).textContent=&#x27;This matchup will be unranked because you rerolled.&#x27;;
+ }
+}
+
+function playerExpectedEpp(a,d){
+ // Estimate natural matchup strength independently of the user&#x27;s selected menu strategy.
+ const acts=[&#x27;drive&#x27;,&#x27;mid&#x27;,&#x27;three&#x27;,&#x27;post&#x27;,&#x27;step&#x27;];
+ const w={...a.t};
+ const gap=a.size-d.size,athGap=a.ath-d.ath;
+ if(a.post&gt;=90&amp;&amp;gap&gt;=6){w.post+=18;w.three*=.7;w.step*=.7}
+ if(a.ath&gt;=94&amp;&amp;athGap&gt;=6)w.drive+=14;
+ if(a.shoot&gt;=95){w.three+=8;w.mid+=5}
+ if(a.shoot&lt;82){w.three*=.35;w.step*=.3}
+ const total=acts.reduce((s,k)=&gt;s+Math.max(0,w[k]||0),0)||1;
+ let epp=0;
+ for(const act of acts){
+  const prob=shotChance(a,d,act,100,0,&#x27;balanced&#x27;,0,0);
+  const points=(act===&#x27;three&#x27;||act===&#x27;step&#x27;)?2:1;
+  epp+=Math.max(0,w[act]||0)/total*prob*points;
+ }
+ // Small possession-value adjustment for rebounding/physical control.
+ epp+=((a.size+a.ath)-(d.size+d.ath))*.0012;
+ return epp;
+}
+function estimateMatchupWinChance(a,b){
+ const ea=playerExpectedEpp(a,b),eb=playerExpectedEpp(b,a);
+ const diff=ea-eb;
+ const p=1/(1+Math.exp(-diff*5.2));
+ return Math.max(.15,Math.min(.85,p));
+}
+function makeMatchId(){
+ try{return crypto.randomUUID()}catch(e){return Date.now().toString(36)+&#x27;-&#x27;+Math.random().toString(36).slice(2)}
+}
+function card(p,color){return `&lt;div&gt;&lt;span class=&quot;badge ${color}&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;${color===&#x27;blue&#x27;?&#x27;YOU&#x27;:&#x27;CPU&#x27;}&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;display:flex;justify-content:space-between;gap:8px;margin-top:8px&quot;&gt;&lt;strong&gt;${p.name}&lt;/strong&gt;&lt;span class=&quot;rating&quot;&gt;${p.ovr}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;trait&quot; style=&quot;margin:5px 0 8px&quot;&gt;${p.trait}&lt;/div&gt;&lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Overall&lt;/span&gt;&lt;span&gt;${p.ovr}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Offense&lt;/span&gt;&lt;span&gt;${p.off}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Defense&lt;/span&gt;&lt;span&gt;${p.def}&lt;/span&gt;&lt;/div&gt;`}
+
+function stopLoop(){loopToken++}
+function choose(p){
+ you=p;$(&#x27;blueCard&#x27;).innerHTML=card(you,&#x27;blue&#x27;);$(&#x27;redCard&#x27;).innerHTML=card(cpu,&#x27;red&#x27;);
+ const interior=(you.size+you.post)-(cpu.size+cpu.def),outside=(you.shoot+you.handle)-(cpu.def+cpu.ath);
+ let txt=interior&gt;12?&#x27;Your strongest edge is inside.&#x27;:outside&gt;12?&#x27;Your strongest edge is on the perimeter.&#x27;:interior&lt;-12?&#x27;CPU has a major interior advantage.&#x27;:outside&lt;-12?&#x27;CPU has the stronger perimeter matchup.&#x27;:&#x27;This is a fairly balanced matchup.&#x27;;
+ $(&#x27;matchupRead&#x27;).textContent=txt+&#x27; BLUE is you. RED is CPU.&#x27;;
+ $(&#x27;matchupPanel&#x27;).classList.remove(&#x27;hidden&#x27;);$(&#x27;matchupPanel&#x27;).scrollIntoView({behavior:&#x27;smooth&#x27;});
+}
+
+const realWait=ms=&gt;new Promise(r=&gt;setTimeout(r,ms));
+
+async function runCoinTossAnimation(firstName,firstOwner){
+ const toss=$(&#x27;coinToss&#x27;),disc=$(&#x27;coinDisc&#x27;);
+ $(&#x27;coinWinner&#x27;).textContent=firstName;
+ $(&#x27;coinWinnerSide&#x27;).textContent=firstOwner===0?&#x27;YOU GET FIRST BALL&#x27;:&#x27;CPU GETS FIRST BALL&#x27;;
+
+ toss.classList.remove(&#x27;hidden&#x27;,&#x27;show&#x27;,&#x27;reveal&#x27;,&#x27;leaving&#x27;);
+ disc.classList.remove(&#x27;flipping&#x27;);
+
+ // Make sure the court is actually on screen before the toss begins.
+ await realWait(45);
+ void disc.offsetWidth;
+ toss.classList.add(&#x27;show&#x27;);
+ disc.classList.add(&#x27;flipping&#x27;);
+
+ await realWait(500);
+ toss.classList.add(&#x27;reveal&#x27;);
+
+ // Hold the result long enough to comfortably read who won first possession.
+ await realWait(1200);
+ toss.classList.add(&#x27;leaving&#x27;);
+
+ await realWait(160);
+ toss.classList.add(&#x27;hidden&#x27;);
+ toss.classList.remove(&#x27;show&#x27;,&#x27;reveal&#x27;,&#x27;leaving&#x27;);
+ disc.classList.remove(&#x27;flipping&#x27;);
+}
+
+async function initGame(simMode=&#x27;watch&#x27;){
+ stopLoop();busy=false;ballInFlight=false;
+ quickSim=simMode===&#x27;quick&#x27;;
+ matchMeta={
+  matchId:makeMatchId(),
+  mode:gameMode,
+  simMode:quickSim?&#x27;quick&#x27;:&#x27;watch&#x27;,
+  challengeDate:gameMode===&#x27;daily&#x27;?utcDateKey():&#x27;&#x27;,
+  expectedWin:estimateMatchupWinChance(you,cpu),
+  rerolls:selectionRerolls,
+  startedAt:Date.now()
+ };
+ const firstOwner=Math.random()&lt;.5?0:1;
+ matchMeta.firstOwner=firstOwner;
+ matchMeta.firstBall=firstOwner===0?you.name:cpu.name;
+ state={score:[0,0],fgm:[0,0],fga:[0,0],reb:[0,0],oreb:[0,0],stl:[0,0],blk:[0,0],energy:[100,100],heat:[0,0],owner:firstOwner,paused:false,finished:false,timeoutUsed:false,coords:{blue:{x:220,y:370},red:{x:270,y:335},ball:{x:228,y:360}}};
+ $(&#x27;pickPanel&#x27;).classList.add(&#x27;hidden&#x27;);$(&#x27;matchupPanel&#x27;).classList.add(&#x27;hidden&#x27;);$(&#x27;gamePanel&#x27;).classList.remove(&#x27;hidden&#x27;);
+ $(&#x27;blueName&#x27;).textContent=you.name;$(&#x27;redName&#x27;).textContent=cpu.name;$(&#x27;blueStatName&#x27;).textContent=you.name;$(&#x27;redStatName&#x27;).textContent=cpu.name;
+ $(&#x27;blueTrait&#x27;).textContent=`${you.trait} • OFF ${you.off} • DEF ${you.def} • OVR ${you.ovr}`;$(&#x27;redTrait&#x27;).textContent=`${cpu.trait} • OFF ${cpu.off} • DEF ${cpu.def} • OVR ${cpu.ovr}`;
+ $(&#x27;timeoutBtn&#x27;).disabled=quickSim;
+ $(&#x27;timeoutBtn&#x27;).textContent=quickSim?&#x27;QUICK SIM&#x27;:&#x27;TIMEOUT&#x27;;
+ $(&#x27;timeoutBtn&#x27;).classList.remove(&#x27;resume&#x27;);
+ $(&#x27;skipResultBtn&#x27;).classList.add(&#x27;hidden&#x27;);
+ $(&#x27;skipResultBtn&#x27;).disabled=false;
+ $(&#x27;timeoutPanel&#x27;).classList.add(&#x27;hidden&#x27;);$(&#x27;next&#x27;).classList.add(&#x27;hidden&#x27;);$(&#x27;shots&#x27;).innerHTML=&#x27;&#x27;;
+ render();resetCourt();
+ const firstName=matchMeta.firstBall;
+ $(&#x27;gamePanel&#x27;).scrollIntoView({behavior:&#x27;auto&#x27;});
+ $(&#x27;status&#x27;).textContent=&#x27;COIN TOSS&#x27;;
+ $(&#x27;commentary&#x27;).textContent=&#x27;Flipping for first possession…&#x27;;
+
+ await runCoinTossAnimation(firstName,matchMeta.firstOwner);
+ if(!state||state.finished)return;
+
+ if(quickSim){
+  $(&#x27;status&#x27;).textContent=&#x27;SIMMING&#x27;;
+  $(&#x27;commentary&#x27;).textContent=`${firstName} gets first ball. Quick Sim is resolving the matchup.`;
+ }else{
+  $(&#x27;skipResultBtn&#x27;).classList.remove(&#x27;hidden&#x27;);
+  $(&#x27;status&#x27;).textContent=state.owner===0?&#x27;YOU BALL&#x27;:&#x27;CPU BALL&#x27;;
+  $(&#x27;commentary&#x27;).textContent=`${firstName} gets first ball.`;
+ }
+ startLoop();
+}
+
+function render(){
+ if(!state)return;
+ $(&#x27;blueScore&#x27;).textContent=state.score[0];$(&#x27;redScore&#x27;).textContent=state.score[1];
+ const p0=state.fga[0]?Math.round(state.fgm[0]/state.fga[0]*100):0,p1=state.fga[1]?Math.round(state.fgm[1]/state.fga[1]*100):0;
+ $(&#x27;blueStats&#x27;).textContent=`PTS ${state.score[0]} • FG ${state.fgm[0]}/${state.fga[0]} (${p0}%) • REB ${state.reb[0]} • STL ${state.stl[0]} • BLK ${state.blk[0]}`;
+ $(&#x27;redStats&#x27;).textContent=`PTS ${state.score[1]} • FG ${state.fgm[1]}/${state.fga[1]} (${p1}%) • REB ${state.reb[1]} • STL ${state.stl[1]} • BLK ${state.blk[1]}`;
+ $(&#x27;blueEnergy&#x27;).style.width=state.energy[0]+&#x27;%&#x27;;$(&#x27;redEnergy&#x27;).style.width=state.energy[1]+&#x27;%&#x27;;
+ const userHasBall=state.owner===0 &amp;&amp; !state.finished;
+ const cpuHasBall=state.owner===1 &amp;&amp; !state.finished;
+ $(&#x27;blueBoardRow&#x27;).classList.toggle(&#x27;hasBall&#x27;,userHasBall);
+ $(&#x27;redBoardRow&#x27;).classList.toggle(&#x27;hasBall&#x27;,cpuHasBall);
+ const arrow=$(&#x27;ballArrow&#x27;);
+ if(state.finished){
+  arrow.textContent=&#x27;FINAL&#x27;;
+  arrow.className=&#x27;arenaBallArrow final&#x27;;
+ }else if(userHasBall){
+  arrow.textContent=&#x27;◀ USER BALL&#x27;;
+  arrow.className=&#x27;arenaBallArrow user&#x27;;
+ }else if(cpuHasBall){
+  arrow.textContent=&#x27;CPU BALL ▶&#x27;;
+  arrow.className=&#x27;arenaBallArrow cpu&#x27;;
+ }else{
+  arrow.textContent=&#x27;BALL LIVE&#x27;;
+  arrow.className=&#x27;arenaBallArrow&#x27;;
+ }
+}
+
+function setPlayer(index,x,y){
+ const side=index===0?&#x27;blue&#x27;:&#x27;red&#x27;,text=index===0?&#x27;blueText&#x27;:&#x27;redText&#x27;;
+ $(side).setAttribute(&#x27;cx&#x27;,x);$(side).setAttribute(&#x27;cy&#x27;,y);$(text).setAttribute(&#x27;x&#x27;,x);$(text).setAttribute(&#x27;y&#x27;,y+4);state.coords[side]={x,y};
+}
+function setBall(x,y){$(&#x27;ball&#x27;).setAttribute(&#x27;cx&#x27;,x);$(&#x27;ball&#x27;).setAttribute(&#x27;cy&#x27;,y);state.coords.ball={x,y}}
+function resetCourt(){setPlayer(0,220,370);setPlayer(1,270,335);const p=state.owner===0?state.coords.blue:state.coords.red;setBall(p.x+8,p.y-8)}
+function ease(t){return t&lt;.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+let ballInFlight=false;
+
+function movePlayer(index,x,y,ms){
+ if(quickSim){
+  setPlayer(index,x,y);
+  if(state &amp;&amp; state.owner===index &amp;&amp; !ballInFlight){
+   const handOffset=x&lt;250?9:-9;
+   setBall(x+handOffset,y-7);
+  }
+  return Promise.resolve();
+ }
+ return new Promise(res=&gt;{
+  const side=index===0?&#x27;blue&#x27;:&#x27;red&#x27;;
+  const from={...state.coords[side]};
+  const st=performance.now();
+
+  function f(n){
+   if(quickSim){
+    setPlayer(index,x,y);
+    if(state &amp;&amp; state.owner===index &amp;&amp; !ballInFlight){
+     const handOffset=x&lt;250?9:-9;
+     setBall(x+handOffset,y-7);
+    }
+    res();return;
+   }
+   const t=Math.min(1,(n-st)/ms),e=ease(t);
+   const px=from.x+(x-from.x)*e;
+   const py=from.y+(y-from.y)*e;
+
+   setPlayer(index,px,py);
+
+   // The ball stays with the current ball-handler while moving.
+   // A small vertical oscillation gives it a subtle dribble effect.
+   if(state &amp;&amp; state.owner===index &amp;&amp; !ballInFlight){
+    const bounce=Math.abs(Math.sin(t*Math.PI*6))*5;
+    const handOffset=px&lt;250?9:-9;
+    setBall(px+handOffset,py-7+bounce);
+   }
+
+   if(t&lt;1) requestAnimationFrame(f);
+   else {
+    if(state &amp;&amp; state.owner===index &amp;&amp; !ballInFlight){
+     const handOffset=x&lt;250?9:-9;
+     setBall(x+handOffset,y-7);
+    }
+    res();
+   }
+  }
+  requestAnimationFrame(f);
+ });
+}
+
+function moveBall(x,y,ms,arc=0){
+ if(quickSim){
+  ballInFlight=true;setBall(x,y);ballInFlight=false;
+  return Promise.resolve();
+ }
+ ballInFlight=true;
+ return new Promise(res=&gt;{
+  const from={...state.coords.ball};
+  const st=performance.now();
+
+  function f(n){
+   if(quickSim){
+    setBall(x,y);ballInFlight=false;res();return;
+   }
+   const t=Math.min(1,(n-st)/ms),e=ease(t);
+   setBall(
+    from.x+(x-from.x)*e,
+    from.y+(y-from.y)*e-Math.sin(Math.PI*t)*arc
+   );
+
+   if(t&lt;1) requestAnimationFrame(f);
+   else {
+    setBall(x,y);
+    ballInFlight=false;
+    res();
+   }
+  }
+  requestAnimationFrame(f);
+ });
+}
+const wait=ms=&gt;new Promise(r=&gt;setTimeout(r,quickSim?0:ms));
+
+function weightedAction(weights){
+ const entries=Object.entries(weights).filter(([,v])=&gt;v&gt;0);
+ const total=entries.reduce((s,[,v])=&gt;s+v,0);
+ let r=Math.random()*total;
+ for(const [k,v] of entries){r-=v;if(r&lt;=0)return k}
+ return entries[0]?.[0]||&#x27;mid&#x27;;
+}
+
+function chooseAction(p,style){
+ // User strategy changes shot selection, not the player&#x27;s underlying ratings.
+ if(style===&#x27;rim&#x27;)return weightedAction({drive:82,post:18});
+ if(style===&#x27;mid&#x27;)return weightedAction({drive:10,mid:85,step:5});
+ if(style===&#x27;three&#x27;)return weightedAction({three:78,step:22});
+ if(style===&#x27;post&#x27;)return weightedAction({drive:15,post:85});
+ if(style===&#x27;balanced&#x27;){
+  // Balanced still looks like the player: half natural tendencies, half even distribution.
+  return weightedAction({
+   drive:p.t.drive*.5+10, mid:p.t.mid*.5+10, three:p.t.three*.5+10,
+   post:p.t.post*.5+10, step:p.t.step*.5+10
+  });
+ }
+ return weightedAction(p.t);
+}
+
+function perimeterMobility(p){
+ // Derived hidden matchup value: explosive athleticism + ball/control agility,
+ // with a size penalty for lateral/change-of-direction defense.
+ // This does NOT replace raw athleticism for rim play.
+ return p.ath + (p.handle-90)*.35 - Math.max(0,p.size-92)*.55;
+}
+
+function chooseCpuAction(p,d){
+ // CPU gets matchup intelligence, not a ratings bonus. It cannot see the user&#x27;s menu choice.
+ const w={...p.t};
+ const sizeGap=p.size-d.size, athGap=p.ath-d.ath;
+ const mobilityGap=perimeterMobility(p)-perimeterMobility(d);
+
+ // Punish size/post mismatches.
+ if(p.post&gt;=90&amp;&amp;sizeGap&gt;=6){w.post+=22;w.drive+=5;w.three*=.65;w.step*=.65}
+ if(p.post&gt;=97&amp;&amp;sizeGap&gt;=12){w.post+=18}
+
+ // Use straight-line athleticism against slower defenders.
+ if(p.ath&gt;=94&amp;&amp;athGap&gt;=6){w.drive+=18;w.post+=4}
+
+ // Use change-of-direction / perimeter mobility against oversized defenders.
+ if(mobilityGap&gt;=5){
+  w.drive+=Math.min(22,mobilityGap*1.4);
+  if(p.shoot&gt;=90){
+   w.step+=Math.min(12,mobilityGap*.65);
+   w.three+=Math.min(8,mobilityGap*.4);
+  }
+ }
+
+ // Great shooters stretch slow or oversized defenders.
+ if(p.shoot&gt;=95){w.three+=12;w.mid+=7}
+ if(p.shoot&gt;=97&amp;&amp;perimeterMobility(d)&lt;=90){w.three+=12;w.step+=5}
+
+ // Poor shooters should not voluntarily live outside.
+ if(p.shoot&lt;82){w.three*=.28;w.step*=.25;w.drive+=10;w.post+=10}
+ if(p.shoot&lt;70){w.three*=.10;w.step*=.10}
+
+ // Elite rim defenders encourage capable shooters to pull them away from the basket.
+ if(d.def&gt;=97&amp;&amp;d.size&gt;=96){
+  w.drive*=.82;w.post*=.82;
+  if(p.shoot&gt;=90){w.mid+=8;w.three+=7}
+ }
+
+ // Elite mobile perimeter defenders make pure jump-shot spam less attractive.
+ if(d.def&gt;=98&amp;&amp;perimeterMobility(d)&gt;=93){
+  w.three*=.88;w.step*=.82;
+  if(p.size&gt;d.size+5)w.post+=10;
+ }
+
+ return weightedAction(w);
+}
+
+function cpuDefense(p,d){
+ // Same four defenses available to the user. Choice is based on opponent profile/matchup.
+ const sizeGap=p.size-d.size;
+ const mobilityGap=perimeterMobility(p)-perimeterMobility(d);
+ let w={balanced:44,pressure:20,rim:20,sag:16};
+
+ if(p.shoot&gt;=96){w.pressure+=28;w.sag-=10}
+ if(p.post&gt;=94&amp;&amp;sizeGap&gt;=5){w.rim+=30;w.pressure-=6}
+ if(p.ath&gt;=97&amp;&amp;p.shoot&lt;88){w.rim+=22;w.sag+=8}
+ if(p.shoot&lt;80){w.sag+=25;w.pressure-=8}
+ if(p.handle&gt;=98){w.pressure-=4}
+
+ // Against a major quickness mismatch, contain the drive rather than over-press.
+ if(mobilityGap&gt;=8){w.balanced+=10;w.sag+=7;w.pressure-=5}
+
+ return weightedAction(w);
+}
+
+function takeover(p,forS,againstS,heat){
+ let b=0;
+ const late=(forS&gt;=8||againstS&gt;=8);
+
+ // Will is hidden and situational. It can swing close possessions, not override bad shot quality.
+ if(p.name===&#x27;Michael Jordan&#x27;){
+  if(againstS-forS&gt;=3)b+=.04;
+  if(late)b+=.04;
+  if(heat&gt;=2)b+=.02;
+ }else if(p.name===&#x27;Kobe Bryant&#x27;&amp;&amp;late){
+  b+=.04;
+ }else if(p.trait===&#x27;Heat Check&#x27;&amp;&amp;heat&gt;=2){
+  b+=.035;
+ }else if(p.will&gt;=99&amp;&amp;late){
+  b+=.02;
+ }else if(p.will&gt;=97&amp;&amp;late){
+  b+=.01;
+ }
+ return Math.min(.10,b);
+}
+function shotChance(a,d,act,en,heat,defS,forS,againstS){
+ // 1-on-1 efficiency model. Interior attempts are high-value shots; long 2s have
+ // realistic lower make rates so their double point value does not become a universal exploit.
+ let base=.50;
+
+ if(act===&#x27;drive&#x27;){
+  base=.64
+   +(a.off-92)*.0032
+   +(a.ath-92)*.0026
+   +(a.size-d.size)*.0025
+   +(a.ath-d.ath)*.0016;
+ }
+ else if(act===&#x27;post&#x27;){
+  base=.62
+   +(a.post-92)*.0045
+   +(a.size-d.size)*.0048
+   +(a.post-d.def)*.0018;
+ }
+ else if(act===&#x27;mid&#x27;){
+  base=.49
+   +(a.shoot-90)*.0046
+   +(a.off-92)*.0015
+   +(a.size-d.size)*.0008;
+ }
+ else if(act===&#x27;three&#x27;){
+  // Beyond the arc scores 2 in this game. Elite shooters can reach the low/mid 40s;
+  // non-shooters can legitimately fall into the single digits/teens.
+  base=.34
+   +(a.shoot-90)*.0055
+   +(a.handle-90)*.0012;
+ }
+ else { // step-back / difficult long 2
+  base=.30
+   +(a.shoot-90)*.0048
+   +(a.handle-90)*.0018;
+ }
+
+ // Direct matchup defense.
+ let defenseImpact=(d.def-90)*.0030;
+ if(act===&#x27;drive&#x27;||act===&#x27;post&#x27;)defenseImpact+=(d.size-90)*.0025;
+ if(act===&#x27;three&#x27;||act===&#x27;step&#x27;)defenseImpact+=(d.ath-90)*.0012;
+ base-=defenseImpact;
+
+ // Defensive strategy contains explicit trade-offs instead of a blanket bonus.
+ if(defS===&#x27;pressure&#x27;){
+  if(act===&#x27;three&#x27;||act===&#x27;step&#x27;)base-=.04;
+  if(act===&#x27;mid&#x27;)base-=.015;
+  if(act===&#x27;drive&#x27;)base+=.025;
+ }
+ if(defS===&#x27;rim&#x27;){
+  if(act===&#x27;drive&#x27;||act===&#x27;post&#x27;)base-=.065;
+  if(act===&#x27;mid&#x27;)base+=.02;
+  if(act===&#x27;three&#x27;||act===&#x27;step&#x27;)base+=.025;
+ }
+ if(defS===&#x27;sag&#x27;){
+  if(act===&#x27;three&#x27;)base+=.055;
+  if(act===&#x27;mid&#x27;)base+=.035;
+  if(act===&#x27;drive&#x27;)base-=.025;
+  if(act===&#x27;post&#x27;)base-=.01;
+ }
+
+ // Signature skills matter only where they logically apply.
+ if(a.trait===&#x27;Paint Dominance&#x27;&amp;&amp;act===&#x27;post&#x27;)base+=.055;
+ if(a.trait===&#x27;Dream Shake&#x27;&amp;&amp;act===&#x27;post&#x27;)base+=.04;
+ if(a.trait===&#x27;Bully Ball&#x27;&amp;&amp;(act===&#x27;post&#x27;||act===&#x27;drive&#x27;))base+=.035;
+ if(a.trait===&#x27;Unblockable Release&#x27;&amp;&amp;(act===&#x27;mid&#x27;||act===&#x27;three&#x27;))base+=.025;
+ if(a.trait===&#x27;One-Leg Fade&#x27;&amp;&amp;act===&#x27;mid&#x27;)base+=.035;
+ if(a.trait===&#x27;Heat Check&#x27;&amp;&amp;(act===&#x27;three&#x27;||act===&#x27;step&#x27;)&amp;&amp;heat&gt;=2)base+=.04;
+ if(d.trait===&#x27;Defensive Wall&#x27;&amp;&amp;(act===&#x27;drive&#x27;||act===&#x27;post&#x27;))base-=.035;
+ if(d.trait===&#x27;Two-Way Lock&#x27;)base-=.02;
+
+ // Fatigue, heat, and hidden clutch/will effects.
+ base+=(en-75)*.0010;
+ base+=heat*.008;
+ base+=takeover(a,forS,againstS,heat);
+
+ // Large physical mismatches are especially important in 1-on-1.
+ const gap=a.size-d.size;
+ if(act===&#x27;post&#x27;&amp;&amp;gap&gt;=10)base+=.04;
+ if(act===&#x27;post&#x27;&amp;&amp;gap&gt;=18)base+=.05;
+ if(act===&#x27;drive&#x27;&amp;&amp;gap&lt;=-18)base-=.04;
+
+ // Perimeter mobility / separation.
+ // A quicker ball-handler can create space against a larger, less laterally mobile defender.
+ // Raw size still matters in post play, rebounding, and rim protection.
+ const mobilityGap=perimeterMobility(a)-perimeterMobility(d);
+ if(act===&#x27;drive&#x27;)base+=Math.max(-.05,Math.min(.07,mobilityGap*.0038));
+ else if(act===&#x27;step&#x27;)base+=Math.max(-.035,Math.min(.045,mobilityGap*.00275));
+ else if(act===&#x27;three&#x27;)base+=Math.max(-.025,Math.min(.035,mobilityGap*.00198));
+ else if(act===&#x27;mid&#x27;)base+=Math.max(-.02,Math.min(.03,mobilityGap*.00154));
+
+ // Shot-specific realistic ranges. There is no single 24% floor anymore.
+ const bounds={
+  drive:[.28,.88],
+  post:[.25,.89],
+  mid:[.18,.72],
+  three:[.05,.54],
+  step:[.04,.48]
+ };
+ const [floor,ceiling]=bounds[act]||[.10,.85];
+ return Math.max(floor,Math.min(ceiling,base));
+}
+function offensiveReboundChance(a,d){
+ let c=.24+(a.size-d.size)*.006+(a.ath-d.ath)*.003;
+ if(a.trait===&#x27;Paint Dominance&#x27;||a.trait===&#x27;Bully Ball&#x27;)c+=.07;if(d.trait===&#x27;Defensive Wall&#x27;)c-=.05;
+ return Math.max(.08,Math.min(.48,c));
+}
+function addShot(x,y,made,shooter){
+ const ns=&#x27;http://www.w3.org/2000/svg&#x27;;
+ const isBlue=shooter===0;
+
+ if(made){
+  const c=document.createElementNS(ns,&#x27;circle&#x27;);
+  c.setAttribute(&#x27;cx&#x27;,x);
+  c.setAttribute(&#x27;cy&#x27;,y);
+  c.setAttribute(&#x27;r&#x27;,&#x27;5&#x27;);
+  c.setAttribute(&#x27;class&#x27;,isBlue?&#x27;shotBlue&#x27;:&#x27;shotRed&#x27;);
+  c.setAttribute(&#x27;stroke&#x27;,&#x27;#fff&#x27;);
+  c.setAttribute(&#x27;stroke-width&#x27;,&#x27;1&#x27;);
+  $(&#x27;shots&#x27;).appendChild(c);
+ }else{
+  const g=document.createElementNS(ns,&#x27;g&#x27;);
+  const cls=isBlue?&#x27;shotXBlue&#x27;:&#x27;shotXRed&#x27;;
+
+  const l1=document.createElementNS(ns,&#x27;line&#x27;);
+  l1.setAttribute(&#x27;x1&#x27;,x-5);l1.setAttribute(&#x27;y1&#x27;,y-5);
+  l1.setAttribute(&#x27;x2&#x27;,x+5);l1.setAttribute(&#x27;y2&#x27;,y+5);
+  l1.setAttribute(&#x27;class&#x27;,cls);
+
+  const l2=document.createElementNS(ns,&#x27;line&#x27;);
+  l2.setAttribute(&#x27;x1&#x27;,x+5);l2.setAttribute(&#x27;y1&#x27;,y-5);
+  l2.setAttribute(&#x27;x2&#x27;,x-5);l2.setAttribute(&#x27;y2&#x27;,y+5);
+  l2.setAttribute(&#x27;class&#x27;,cls);
+
+  g.appendChild(l1);g.appendChild(l2);
+  $(&#x27;shots&#x27;).appendChild(g);
+ }
+}
+
+async function clearBall(rebounder){
+ const defender=1-rebounder,name=rebounder===0?you.name:cpu.name;
+ const rx=250+(Math.random()*32-16);
+ await Promise.all([movePlayer(rebounder,rx,94,300),movePlayer(defender,rx+(Math.random()&lt;.5?-22:22),118,340)]);
+ setBall(rx+7,84);await wait(100);
+ const cx=Math.random()&lt;.5?70:430,cy=175+Math.random()*35;
+ $(&#x27;status&#x27;).textContent=rebounder===0?&#x27;YOU CLEAR&#x27;:&#x27;CPU CLEAR&#x27;;
+ $(&#x27;commentary&#x27;).textContent=name+&#x27; gets the rebound and clears outside the three-point line.&#x27;;
+ await Promise.all([movePlayer(rebounder,cx,cy,520),movePlayer(defender,cx+(cx&lt;250?25:-25),cy-28,580)]);
+ setBall(cx+(cx&lt;250?8:-8),cy-8);await wait(150);
+}
+
+
+
+function stealChance(ballHandler,defender,style){
+ let base=.022+((defender.def-ballHandler.handle)/650)+((defender.will-ballHandler.will)/1800);
+ if(style===&#x27;pressure&#x27;)base+=.02;
+ if(style===&#x27;sag&#x27;)base-=.005;
+ if(ballHandler.trait===&#x27;Control the Possession&#x27;||ballHandler.trait===&#x27;Surgical&#x27;)base-=.01;
+ if(defender.trait===&#x27;The Glove&#x27;||defender.trait===&#x27;Lockdown Guard&#x27;||defender.trait===&#x27;Two-Way Lock&#x27;)base+=.012;
+ return Math.max(.01,Math.min(.085,base));
+}
+
+function blockChance(attacker,defender,act,zone,style){
+ let base=.012+((defender.def-88)/1200)+((defender.size-attacker.size)/500)+((defender.ath-attacker.ath)/1200);
+ if(zone===&#x27;rim&#x27;||act===&#x27;drive&#x27;||act===&#x27;post&#x27;)base+=.035;
+ else if(zone===&#x27;mid&#x27;)base+=.012;
+ else base-=.004;
+ if(style===&#x27;rim&#x27;&amp;&amp;(zone===&#x27;rim&#x27;||act===&#x27;post&#x27;))base+=.02;
+ if(style===&#x27;pressure&#x27;&amp;&amp;(zone!==&#x27;rim&#x27;))base+=.006;
+ if(attacker.trait===&#x27;Unblockable Release&#x27;&amp;&amp;(zone===&#x27;mid&#x27;||zone===&#x27;three&#x27;))base-=.014;
+ if(attacker.trait===&#x27;Skyhook&#x27;||attacker.trait===&#x27;One-Leg Fade&#x27;)base-=.008;
+ if(defender.trait===&#x27;Defensive Wall&#x27;||defender.trait===&#x27;Paint Fortress&#x27;||defender.trait===&#x27;Two-Way Length&#x27;||defender.trait===&#x27;The Admiral&#x27;)base+=.012;
+ const mobilityGap=perimeterMobility(attacker)-perimeterMobility(defender);
+ if(mobilityGap&gt;0&amp;&amp;(act===&#x27;drive&#x27;||act===&#x27;mid&#x27;||act===&#x27;three&#x27;||act===&#x27;step&#x27;)){
+  base-=Math.min(.03,mobilityGap*.0015);
+ }
+ return Math.max(.005,Math.min(.16,base));
+}
+
+function shotPointValue(x,y){
+ // Match the current visible half-court exactly: inside = 1, on/beyond arc = 2.
+ const hoopX=250, hoopY=72, arcRadius=204;
+ if(y&lt;=160)return (x&lt;=66||x&gt;=434)?2:1;
+ const dx=x-hoopX,dy=y-hoopY;
+ return Math.sqrt(dx*dx+dy*dy)&gt;=arcRadius?2:1;
+}
+
+function fatigueCost(player,baseCost){
+ // Stamina stays hidden, but directly affects how quickly a player wears down.
+ // 100 stamina pays the base cost; lower stamina pays progressively more.
+ const multiplier=1+(100-player.stam)*.018;
+ return baseCost*multiplier;
+}
+
+async function playOnePossession(){
+ if(!state||state.finished||state.paused||busy)return;
+ busy=true;
+ try{
+  const offense=state.owner,defender=1-offense;
+  const a=offense===0?you:cpu,d=offense===0?cpu:you;
+  const style=offense===0?$(&#x27;offense&#x27;).value:null,defS=defender===0?$(&#x27;defense&#x27;).value:cpuDefense(a,d),act=offense===0?chooseAction(a,style):chooseCpuAction(a,d);
+  resetCourt();$(&#x27;status&#x27;).textContent=offense===0?&#x27;YOU BALL&#x27;:&#x27;CPU BALL&#x27;;$(&#x27;commentary&#x27;).textContent=a.name+&#x27; has the ball.&#x27;;
+
+  const x0=215+Math.random()*70;
+  await Promise.all([movePlayer(offense,x0,350,360),movePlayer(defender,x0+(x0&lt;250?24:-24),320,420)]);
+  if(state.paused||state.finished)return;
+
+  // Live-ball steal chance before the shot action fully develops.
+  if(Math.random()&lt;stealChance(a,d,defS)){
+   const stealX=Math.max(90,Math.min(410,x0+(Math.random()*24-12)));
+   const stealY=322+Math.random()*18;
+   await moveBall(stealX,stealY,220,28);
+   state.stl[defender]++;
+   state.owner=defender;
+   render();
+   $(&#x27;status&#x27;).textContent=defender===0?&#x27;YOU STEAL&#x27;:&#x27;CPU STEAL&#x27;;
+   $(&#x27;commentary&#x27;).textContent=d.name+&#x27; jumps the handle and gets the steal.&#x27;;
+   await clearBall(defender);
+   state.energy[offense]=Math.max(35,state.energy[offense]-fatigueCost(a,3));
+   state.energy[defender]=Math.max(40,state.energy[defender]-fatigueCost(d,1));
+   render();
+   if((state.score[0]&gt;=11||state.score[1]&gt;=11)&amp;&amp;Math.abs(state.score[0]-state.score[1])&gt;=2)finishGame();
+   return;
+  }
+
+  let sx=250,sy=180,zone=&#x27;mid&#x27;,desc=&#x27;&#x27;;
+  if(act===&#x27;drive&#x27;){desc=&#x27;drives to the rim&#x27;;const wing=x0+(Math.random()&lt;.5?-45:45);await Promise.all([movePlayer(offense,wing,285,320),movePlayer(defender,wing+(wing&lt;250?17:-17),262,390)]);const bx=250+(Math.random()*28-14);await Promise.all([movePlayer(offense,bx,100,470),movePlayer(defender,bx+(Math.random()*18-9),126,520)]);sx=bx;sy=95;zone=&#x27;rim&#x27;}
+  else if(act===&#x27;post&#x27;){desc=&#x27;backs down in the post&#x27;;const px=Math.random()&lt;.5?190:310;await Promise.all([movePlayer(offense,px,180,460),movePlayer(defender,px+(px&lt;250?14:-14),160,500)]);await Promise.all([movePlayer(offense,px,118,320),movePlayer(defender,px+(px&lt;250?10:-10),100,350)]);sx=px;sy=112;zone=&#x27;rim&#x27;}
+  else if(act===&#x27;three&#x27;){
+   desc=&#x27;creates a shot beyond the arc&#x27;;
+   const side=Math.random()&lt;.5?-1:1;
+   const px=250+side*(185+Math.random()*24);
+   const py=198+Math.random()*46;
+   await Promise.all([
+    movePlayer(offense,px,py,520),
+    movePlayer(defender,px+(px&lt;250?18:-18),py-20,590)
+   ]);
+   sx=px;sy=py;zone=&#x27;three&#x27;;
+  }
+  else if(act===&#x27;step&#x27;){
+   desc=&#x27;uses a step-back beyond the arc&#x27;;
+   const side=x0&lt;250?-1:1;
+   const x1=x0+side*55;
+   const x2=250+side*(155+Math.random()*38);
+   const y2=276+Math.random()*34;
+   await Promise.all([
+    movePlayer(offense,x1,255,330),
+    movePlayer(defender,x1+side*14,232,420)
+   ]);
+   await movePlayer(offense,x2,y2,300);
+   sx=x2;sy=y2;zone=&#x27;three&#x27;;
+  }
+  else {desc=&#x27;pulls up from mid-range&#x27;;const mx=145+Math.random()*210;await Promise.all([movePlayer(offense,mx,225,460),movePlayer(defender,mx+(mx&lt;250?14:-14),205,520)]);sx=mx;sy=225;zone=&#x27;mid&#x27;}
+
+  const forS=state.score[offense],againstS=state.score[defender];
+  const blockHappened=Math.random()&lt;blockChance(a,d,act,zone,defS);
+  const made=!blockHappened &amp;&amp; (Math.random()&lt;shotChance(a,d,act,state.energy[offense],state.heat[offense],defS,forS,againstS));
+  state.fga[offense]++;
+
+  await moveBall(250,72,480,zone===&#x27;three&#x27;?110:75);
+
+  if(made){
+   const pts=shotPointValue(sx,sy);
+   state.fgm[offense]++;state.score[offense]+=pts;state.heat[offense]=Math.min(3,state.heat[offense]+1);
+   addShot(sx,sy,true,offense);render();
+   $(&#x27;commentary&#x27;).textContent=a.name+&#x27; &#x27;+desc+&#x27; — GOOD for &#x27;+pts+&#x27;!&#x27;;
+   state.owner=defender;
+   await wait(230);
+  }else{
+   state.heat[offense]=Math.max(-2,state.heat[offense]-1);
+   addShot(sx,sy,false,offense);
+   let reboundText=&#x27;&#x27;;
+   if(blockHappened){
+    state.blk[defender]++;
+    const offensiveBoard=Math.random()&lt;(0.14+Math.max(0,(a.size-d.size))/260);
+    const rebounder=offensiveBoard?offense:defender;
+    state.reb[rebounder]++; if(offensiveBoard)state.oreb[offense]++;
+    state.owner=rebounder; render();
+    reboundText=(rebounder===0?you.name:cpu.name)+&#x27; recovers it.&#x27;;
+    $(&#x27;commentary&#x27;).textContent=d.name+&#x27; blocks it! &#x27;+reboundText;
+    await clearBall(rebounder);
+   }else{
+    const offensiveBoard=Math.random()&lt;offensiveReboundChance(a,d);
+    const rebounder=offensiveBoard?offense:defender;
+    state.reb[rebounder]++; if(offensiveBoard)state.oreb[offense]++;
+    state.owner=rebounder; render();
+    $(&#x27;commentary&#x27;).textContent=a.name+&#x27; &#x27;+desc+&#x27; — misses. &#x27;+(rebounder===0?you.name:cpu.name)+&#x27; gets the rebound.&#x27;;
+    await clearBall(rebounder);
+   }
+  }
+
+  const offenseCost=act===&#x27;drive&#x27;?5:act===&#x27;post&#x27;?4:3;
+  state.energy[offense]=Math.max(35,state.energy[offense]-fatigueCost(a,offenseCost));
+  state.energy[defender]=Math.max(40,state.energy[defender]-fatigueCost(d,2));
+  render();
+
+  if((state.score[0]&gt;=11||state.score[1]&gt;=11)&amp;&amp;Math.abs(state.score[0]-state.score[1])&gt;=2)finishGame();
+ }finally{busy=false}
+}
+
+function startLoop(){
+ stopLoop();const token=loopToken;
+ async function tick(){
+  if(!state||state.finished||state.paused||token!==loopToken)return;
+  await playOnePossession();
+  if(!state||state.finished||state.paused||token!==loopToken)return;
+  setTimeout(tick,quickSim?0:260);
+ }
+ setTimeout(tick,quickSim?0:250);
+}
+function callTimeout(){
+ if(!state||state.finished||state.paused||state.timeoutUsed)return;
+ state.paused=true;
+ state.timeoutUsed=true;
+ stopLoop();
+
+ $(&#x27;timeoutOffense&#x27;).value=$(&#x27;offense&#x27;).value;
+ $(&#x27;timeoutDefense&#x27;).value=$(&#x27;defense&#x27;).value;
+ $(&#x27;timeoutPanel&#x27;).classList.remove(&#x27;hidden&#x27;);
+
+ $(&#x27;timeoutBtn&#x27;).textContent=&#x27;RESUME&#x27;;
+ $(&#x27;timeoutBtn&#x27;).classList.add(&#x27;resume&#x27;);
+ $(&#x27;timeoutBtn&#x27;).disabled=false;
+
+ $(&#x27;status&#x27;).textContent=&#x27;TIMEOUT&#x27;;
+ $(&#x27;commentary&#x27;).textContent=&#x27;Timeout. Adjust your strategy, then tap RESUME on the court.&#x27;;
+ render();
+}
+
+function resume(){
+ if(!state||!state.paused)return;
+ $(&#x27;offense&#x27;).value=$(&#x27;timeoutOffense&#x27;).value;
+ $(&#x27;defense&#x27;).value=$(&#x27;timeoutDefense&#x27;).value;
+ state.paused=false;
+ $(&#x27;timeoutPanel&#x27;).classList.add(&#x27;hidden&#x27;);
+
+ $(&#x27;timeoutBtn&#x27;).textContent=&#x27;TIMEOUT USED&#x27;;
+ $(&#x27;timeoutBtn&#x27;).classList.remove(&#x27;resume&#x27;);
+ $(&#x27;timeoutBtn&#x27;).disabled=true;
+
+ $(&#x27;commentary&#x27;).textContent=&#x27;Back to play.&#x27;;
+ render();
+ startLoop();
+}
+
+function skipToResult(){
+ if(!state||state.finished||quickSim)return;
+
+ // Preserve everything already earned in this game. Only the remaining
+ // presentation delays are removed.
+ quickSim=true;
+ if(matchMeta)matchMeta.simMode=&#x27;skip&#x27;;
+
+ $(&#x27;skipResultBtn&#x27;).classList.add(&#x27;hidden&#x27;);
+ $(&#x27;skipResultBtn&#x27;).disabled=true;
+
+ // If the user skips while in a timeout, keep any strategy changes they made.
+ if(state.paused){
+  $(&#x27;offense&#x27;).value=$(&#x27;timeoutOffense&#x27;).value;
+  $(&#x27;defense&#x27;).value=$(&#x27;timeoutDefense&#x27;).value;
+  state.paused=false;
+  $(&#x27;timeoutPanel&#x27;).classList.add(&#x27;hidden&#x27;);
+ }
+
+ $(&#x27;timeoutBtn&#x27;).textContent=&#x27;SIMMING&#x27;;
+ $(&#x27;timeoutBtn&#x27;).classList.remove(&#x27;resume&#x27;);
+ $(&#x27;timeoutBtn&#x27;).disabled=true;
+ $(&#x27;status&#x27;).textContent=&#x27;SIMMING&#x27;;
+ $(&#x27;commentary&#x27;).textContent=&#x27;Skipping the remaining animations. Resolving from the current game state…&#x27;;
+ render();
+
+ // A paused loop was stopped during timeout and needs restarting.
+ // During live play, the existing possession/loop will continue and instantly
+ // collapse its remaining animation because quickSim is now true.
+ if(!busy)startLoop();
+}
+
+function timeoutToggle(){
+ if(!state||state.finished)return;
+ if(state.paused)resume();
+ else callTimeout();
+}
+
+function finishGame(){
+ if(!state||state.finished)return;
+ state.finished=true;
+ stopLoop();
+ const win=state.score[0]&gt;state.score[1];
+
+ if(win){careerW++;streak=streak&gt;=0?streak+1:1}
+ else{careerL++;streak=streak&lt;=0?streak-1:-1}
+
+ $(&#x27;wins&#x27;).textContent=careerW;
+ $(&#x27;losses&#x27;).textContent=careerL;
+ $(&#x27;streak&#x27;).textContent=streak;
+ $(&#x27;status&#x27;).textContent=&#x27;FINAL&#x27;;
+ $(&#x27;timeoutBtn&#x27;).textContent=&#x27;GAME OVER&#x27;;
+ $(&#x27;timeoutBtn&#x27;).classList.remove(&#x27;resume&#x27;);
+ $(&#x27;timeoutBtn&#x27;).disabled=true;
+ $(&#x27;skipResultBtn&#x27;).classList.add(&#x27;hidden&#x27;);
+ $(&#x27;skipResultBtn&#x27;).disabled=true;
+ $(&#x27;commentary&#x27;).innerHTML=`&lt;strong&gt;${win?you.name:cpu.name} wins ${Math.max(...state.score)}-${Math.min(...state.score)}&lt;/strong&gt;&lt;br&gt;${you.name}: ${state.score[0]} PTS, ${state.fgm[0]}/${state.fga[0]} FG, ${state.reb[0]} REB, ${state.stl[0]} STL, ${state.blk[0]} BLK • ${cpu.name}: ${state.score[1]} PTS, ${state.fgm[1]}/${state.fga[1]} FG, ${state.reb[1]} REB, ${state.stl[1]} STL, ${state.blk[1]} BLK`;
+ $(&#x27;next&#x27;).classList.remove(&#x27;hidden&#x27;);
+
+ // Report the result to the parent app so the signed-in user&#x27;s record persists.
+ try{
+   window.parent.postMessage({
+     type:&#x27;goat-vs-goat-result&#x27;,
+     win,
+     userPlayer:you.name,
+     cpuPlayer:cpu.name,
+     userScore:state.score[0],
+     cpuScore:state.score[1],
+     matchId:matchMeta?.matchId||&#x27;&#x27;,
+     mode:matchMeta?.mode||&#x27;regular&#x27;,
+     simMode:matchMeta?.simMode||&#x27;watch&#x27;,
+     firstBall:matchMeta?.firstBall||&#x27;&#x27;,
+     challengeDate:matchMeta?.challengeDate||&#x27;&#x27;,
+     expectedWin:matchMeta?.expectedWin??.5,
+     rerolls:matchMeta?.rerolls||0,
+     durationMs:matchMeta?.startedAt?Date.now()-matchMeta.startedAt:0
+   }, &#x27;*&#x27;);
+ }catch(e){}
+}
+
+$(&#x27;reroll&#x27;).addEventListener(&#x27;click&#x27;,rerollSelection);
+$(&#x27;start&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;initGame(&#x27;watch&#x27;));
+$(&#x27;quickSim&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;initGame(&#x27;quick&#x27;));
+$(&#x27;timeoutBtn&#x27;).addEventListener(&#x27;click&#x27;,timeoutToggle);
+$(&#x27;skipResultBtn&#x27;).addEventListener(&#x27;click&#x27;,skipToResult);
+$(&#x27;next&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{newRoll(gameMode===&#x27;daily&#x27;?&#x27;daily&#x27;:&#x27;regular&#x27;,true);window.scrollTo({top:0,behavior:&#x27;smooth&#x27;})});
+window.addEventListener(&#x27;message&#x27;,e=&gt;{
+ const d=e.data||{};
+ if(d.type===&#x27;gvg-start-daily&#x27;){newRoll(&#x27;daily&#x27;,true);window.scrollTo(0,0)}
+ if(d.type===&#x27;gvg-start-regular&#x27;){newRoll(&#x27;regular&#x27;,true);window.scrollTo(0,0)}
+});
+newRoll(&#x27;regular&#x27;,true);
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+</section>
+
+<script>
+const ACCOUNTS_KEY='gvg_accounts_v2';
+const SESSION_KEY='gvg_session_v2';
+const PLAYER_STATS_KEY='gvg_player_stats_v5_roster100';
+const SIM_BASELINE_GAMES=1000;
+const SIM_BASELINE_SEED=20260809;
+const SIM_BASELINE_STATS={"Kareem Abdul-Jabbar":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Ray Allen":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Giannis Antetokounmpo":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Carmelo Anthony":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Nate Archibald":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Paul Arizin":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Charles Barkley":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Rick Barry":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Elgin Baylor":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dave Bing":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Larry Bird":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kobe Bryant":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Wilt Chamberlain":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bob Cousy":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dave Cowens":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Billy Cunningham":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Stephen Curry":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Anthony Davis":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dave DeBusschere":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Clyde Drexler":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tim Duncan":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kevin Durant":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Julius Erving":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Patrick Ewing":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Walt Frazier":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kevin Garnett":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"George Gervin":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Hal Greer":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"James Harden":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"John Havlicek":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Elvin Hayes":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Allen Iverson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"LeBron James":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Magic Johnson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Sam Jones":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Michael Jordan":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jason Kidd":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kawhi Leonard":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Damian Lillard":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jerry Lucas":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Karl Malone":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Moses Malone":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Pete Maravich":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bob McAdoo":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kevin McHale":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"George Mikan":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Reggie Miller":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Earl Monroe":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Steve Nash":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dirk Nowitzki":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Shaquille O’Neal":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Hakeem Olajuwon":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Robert Parish":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Chris Paul":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Gary Payton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bob Pettit":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Paul Pierce":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Scottie Pippen":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Willis Reed":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Oscar Robertson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"David Robinson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dennis Rodman":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bill Russell":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dolph Schayes":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bill Sharman":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"John Stockton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Isiah Thomas":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Nate Thurmond":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Wes Unseld":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dwyane Wade":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bill Walton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jerry West":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Russell Westbrook":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Lenny Wilkens":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dominique Wilkins":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"James Worthy":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Nikola Jokić":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Luka Dončić":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Shai Gilgeous-Alexander":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jayson Tatum":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Joel Embiid":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Anthony Edwards":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Devin Booker":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Donovan Mitchell":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jalen Brunson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jaylen Brown":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Victor Wembanyama":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Cade Cunningham":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tyrese Maxey":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jalen Williams":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Chet Holmgren":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tyrese Haliburton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Ja Morant":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Cooper Flagg":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dwight Howard":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Pau Gasol":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tony Parker":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Vince Carter":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tracy McGrady":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Manu Ginóbili":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}}};
+const H2H_KEY='gvg_h2h_v1';
+const UPSETS_KEY='gvg_upsets_v1';
+const PROCESSED_KEY='gvg_processed_matches_v1';
+const GVG_ROSTER=["Kareem Abdul-Jabbar","Ray Allen","Giannis Antetokounmpo","Carmelo Anthony","Nate Archibald","Paul Arizin","Charles Barkley","Rick Barry","Elgin Baylor","Dave Bing","Larry Bird","Kobe Bryant","Wilt Chamberlain","Bob Cousy","Dave Cowens","Billy Cunningham","Stephen Curry","Anthony Davis","Dave DeBusschere","Clyde Drexler","Tim Duncan","Kevin Durant","Julius Erving","Patrick Ewing","Walt Frazier","Kevin Garnett","George Gervin","Hal Greer","James Harden","John Havlicek","Elvin Hayes","Allen Iverson","LeBron James","Magic Johnson","Sam Jones","Michael Jordan","Jason Kidd","Kawhi Leonard","Damian Lillard","Jerry Lucas","Karl Malone","Moses Malone","Pete Maravich","Bob McAdoo","Kevin McHale","George Mikan","Reggie Miller","Earl Monroe","Steve Nash","Dirk Nowitzki","Shaquille O’Neal","Hakeem Olajuwon","Robert Parish","Chris Paul","Gary Payton","Bob Pettit","Paul Pierce","Scottie Pippen","Willis Reed","Oscar Robertson","David Robinson","Dennis Rodman","Bill Russell","Dolph Schayes","Bill Sharman","John Stockton","Isiah Thomas","Nate Thurmond","Wes Unseld","Dwyane Wade","Bill Walton","Jerry West","Russell Westbrook","Lenny Wilkens","Dominique Wilkins","James Worthy","Nikola Jokić","Luka Dončić","Shai Gilgeous-Alexander","Jayson Tatum","Joel Embiid","Anthony Edwards","Devin Booker","Donovan Mitchell","Jalen Brunson","Jaylen Brown","Victor Wembanyama","Cade Cunningham","Tyrese Maxey","Jalen Williams","Chet Holmgren","Tyrese Haliburton","Ja Morant","Cooper Flagg","Dwight Howard","Pau Gasol","Tony Parker","Vince Carter","Tracy McGrady","Manu Ginóbili"];
+const GVG_POSITIONS={"Nate Archibald":"PG","Dave Bing":"PG","Bob Cousy":"PG","Walt Frazier":"PG","Jason Kidd":"PG","Magic Johnson":"PG","Steve Nash":"PG","Chris Paul":"PG","Gary Payton":"PG","John Stockton":"PG","Isiah Thomas":"PG","Russell Westbrook":"PG","Lenny Wilkens":"PG","Stephen Curry":"PG","Damian Lillard":"PG","Oscar Robertson":"PG","Luka Dončić":"PG","Shai Gilgeous-Alexander":"PG","Jalen Brunson":"PG","Cade Cunningham":"PG","Tyrese Maxey":"PG","Tyrese Haliburton":"PG","Ja Morant":"PG","Tony Parker":"PG","Ray Allen":"SG","Kobe Bryant":"SG","Clyde Drexler":"SG","George Gervin":"SG","Hal Greer":"SG","James Harden":"SG","Sam Jones":"SG","Michael Jordan":"SG","Pete Maravich":"SG","Reggie Miller":"SG","Earl Monroe":"SG","Bill Sharman":"SG","Dwyane Wade":"SG","Jerry West":"SG","Anthony Edwards":"SG","Devin Booker":"SG","Donovan Mitchell":"SG","Jaylen Brown":"SG","Vince Carter":"SG","Tracy McGrady":"SG","Manu Ginóbili":"SG","Allen Iverson":"SG","Carmelo Anthony":"SF","Paul Arizin":"SF","Rick Barry":"SF","Elgin Baylor":"SF","Larry Bird":"SF","Kevin Durant":"SF","Julius Erving":"SF","John Havlicek":"SF","LeBron James":"SF","Kawhi Leonard":"SF","Paul Pierce":"SF","Scottie Pippen":"SF","Dominique Wilkins":"SF","James Worthy":"SF","Jayson Tatum":"SF","Jalen Williams":"SF","Cooper Flagg":"SF","Billy Cunningham":"SF","Giannis Antetokounmpo":"PF","Charles Barkley":"PF","Dave DeBusschere":"PF","Tim Duncan":"PF","Kevin Garnett":"PF","Elvin Hayes":"PF","Jerry Lucas":"PF","Karl Malone":"PF","Kevin McHale":"PF","Bob Pettit":"PF","Dennis Rodman":"PF","Dolph Schayes":"PF","Wes Unseld":"PF","Anthony Davis":"PF","Pau Gasol":"PF","Dirk Nowitzki":"PF","Kareem Abdul-Jabbar":"C","Wilt Chamberlain":"C","Dave Cowens":"C","Patrick Ewing":"C","George Mikan":"C","Moses Malone":"C","Bob McAdoo":"C","Shaquille O’Neal":"C","Hakeem Olajuwon":"C","Robert Parish":"C","Willis Reed":"C","David Robinson":"C","Bill Russell":"C","Nate Thurmond":"C","Bill Walton":"C","Joel Embiid":"C","Victor Wembanyama":"C","Chet Holmgren":"C","Dwight Howard":"C","Nikola Jokić":"C"};
+let rankingPosition='ALL';
+let lastPostgameResult=null;
+
+function localDateKey(d=new Date()){
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return `${y}-${m}-${day}`;
+}
+function pairKey(a,b){return [a,b].sort((x,y)=>x.localeCompare(y)).join('|||')}
+function expectedScore(rA,rB){return 1/(1+Math.pow(10,(rB-rA)/400))}
+
+function defaultLegendStat(){return {wins:0,losses:0,rating:1500,games:0,pointsFor:0,pointsAgainst:0,daily:{}}}
+function baselineLegendStats(){
+ return JSON.parse(JSON.stringify(SIM_BASELINE_STATS));
+}
+function loadLegendStats(){
+ let s=null;
+ try{
+  const raw=localStorage.getItem(PLAYER_STATS_KEY);
+  s=raw?JSON.parse(raw):null;
+ }catch(e){}
+ if(!s)s=baselineLegendStats();
+ for(const n of GVG_ROSTER){
+  if(!s[n])s[n]=defaultLegendStat();
+  if(typeof s[n].rating!=='number')s[n].rating=1500;
+  if(typeof s[n].pointsFor!=='number')s[n].pointsFor=0;
+  if(typeof s[n].pointsAgainst!=='number')s[n].pointsAgainst=0;
+  if(!s[n].daily)s[n].daily={};
+ }
+ return s;
+}
+function saveLegendStats(s){localStorage.setItem(PLAYER_STATS_KEY,JSON.stringify(s))}
+
+function updateLegendStats(result){
+ const stats=loadLegendStats(),a=result.userPlayer,b=result.cpuPlayer,date=localDateKey();
+ const A=stats[a]||defaultLegendStat(),B=stats[b]||defaultLegendStat();
+ if(!A.daily[date])A.daily[date]={wins:0,losses:0,rating:1500};
+ if(!B.daily[date])B.daily[date]={wins:0,losses:0,rating:1500};
+ if(typeof A.daily[date].rating!=='number')A.daily[date].rating=1500;
+ if(typeof B.daily[date].rating!=='number')B.daily[date].rating=1500;
+
+ const sa=result.win?1:0,sb=1-sa;
+ A.games++;B.games++;
+ A.pointsFor+=(result.userScore||0);A.pointsAgainst+=(result.cpuScore||0);
+ B.pointsFor+=(result.cpuScore||0);B.pointsAgainst+=(result.userScore||0);
+ if(result.win){A.wins++;B.losses++;A.daily[date].wins++;B.daily[date].losses++}
+ else{A.losses++;B.wins++;A.daily[date].losses++;B.daily[date].wins++}
+
+ const K=24,ra=A.rating,rb=B.rating;
+ A.rating=Math.round(ra+K*(sa-expectedScore(ra,rb)));
+ B.rating=Math.round(rb+K*(sb-expectedScore(rb,ra)));
+
+ const drA=A.daily[date].rating,drB=B.daily[date].rating,DK=28;
+ A.daily[date].rating=Math.round(drA+DK*(sa-expectedScore(drA,drB)));
+ B.daily[date].rating=Math.round(drB+DK*(sb-expectedScore(drB,drA)));
+
+ stats[a]=A;stats[b]=B;saveLegendStats(stats);
+}
+
+function loadH2H(){try{return JSON.parse(localStorage.getItem(H2H_KEY)||'{}')}catch(e){return {}}}
+function saveH2H(h){localStorage.setItem(H2H_KEY,JSON.stringify(h))}
+function updateH2H(result){
+ const h=loadH2H(),key=pairKey(result.userPlayer,result.cpuPlayer),date=localDateKey();
+ if(!h[key])h[key]={wins:{},daily:{}};
+ const row=h[key]; if(!row.daily[date])row.daily[date]={};
+ const winner=result.win?result.userPlayer:result.cpuPlayer;
+ row.wins[winner]=(row.wins[winner]||0)+1;
+ row.daily[date][winner]=(row.daily[date][winner]||0)+1;
+ h[key]=row;saveH2H(h);
+}
+function getH2H(a,b){
+ const row=loadH2H()[pairKey(a,b)]||{wins:{},daily:{}},date=localDateKey();
+ return {
+  allA:row.wins[a]||0,allB:row.wins[b]||0,
+  todayA:(row.daily[date]||{})[a]||0,todayB:(row.daily[date]||{})[b]||0
+ };
+}
+
+function loadUpsets(){try{return JSON.parse(localStorage.getItem(UPSETS_KEY)||'{}')}catch(e){return {}}}
+function addUpset(result,user){
+ const winnerChance=result.win?Number(result.expectedWin||.5):1-Number(result.expectedWin||.5);
+ if(winnerChance>.42)return;
+ const u=loadUpsets(),date=localDateKey();
+ if(!u[date])u[date]=[];
+ u[date].push({
+  winner:result.win?result.userPlayer:result.cpuPlayer,
+  loser:result.win?result.cpuPlayer:result.userPlayer,
+  winnerChance,
+  score:`${Math.max(result.userScore,result.cpuScore)}-${Math.min(result.userScore,result.cpuScore)}`,
+  user:user||'Player',matchId:result.matchId||'',at:Date.now()
+ });
+ u[date]=u[date].sort((a,b)=>a.winnerChance-b.winnerChance||b.at-a.at).slice(0,25);
+ localStorage.setItem(UPSETS_KEY,JSON.stringify(u));
+}
+
+function loadAccounts(){try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)||'{}')}catch(e){return {}}}
+function saveAccounts(a){localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(a))}
+function currentUser(){return localStorage.getItem(SESSION_KEY)||''}
+function initials(name){return (name||'?').slice(0,2).toUpperCase()}
+function normalizeAccount(a){
+ a=a||{};
+ if(typeof a.wins!=='number')a.wins=0;if(typeof a.losses!=='number')a.losses=0;
+ if(typeof a.streak!=='number')a.streak=0;if(typeof a.rating!=='number')a.rating=1500;
+ if(typeof a.rankedGames!=='number')a.rankedGames=a.wins+a.losses;
+ if(!a.pairCounts)a.pairCounts={};if(!a.legendCounts)a.legendCounts={};if(!a.dailyAttempts)a.dailyAttempts={};
+ if(!a.quickSimCounts)a.quickSimCounts={};
+ return a;
+}
+function userRank(username){
+ const accounts=loadAccounts();
+ const rows=Object.entries(accounts).map(([name,a])=>({name,...normalizeAccount(a)})).sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
+ const i=rows.findIndex(r=>r.name===username);return i>=0?i+1:null;
+}
+
+async function hashPassword(text){
+ const data=new TextEncoder().encode(text),digest=await crypto.subtle.digest('SHA-256',data);
+ return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function processedIds(){
+ try{return JSON.parse(localStorage.getItem(PROCESSED_KEY)||'[]')}catch(e){return []}
+}
+function markProcessed(id){
+ if(!id)return;
+ let ids=processedIds();if(ids.includes(id))return;
+ ids.push(id);ids=ids.slice(-300);localStorage.setItem(PROCESSED_KEY,JSON.stringify(ids));
+}
+
+function evaluateRankEligibility(result){
+ const user=currentUser();
+ if(!user)return {ranked:false,reason:'Sign in to make games count toward rankings.'};
+ if(!result.matchId)return {ranked:false,reason:'Missing ranked match ID.'};
+ if(processedIds().includes(result.matchId))return {ranked:false,reason:'Duplicate result ignored.'};
+ markProcessed(result.matchId);
+
+ const accounts=loadAccounts(),acct=normalizeAccount(accounts[user]),date=localDateKey();
+
+ const fastResolution=result.simMode==='quick'||result.simMode==='skip';
+ if(!fastResolution && (result.durationMs||0)<5000){
+  accounts[user]=acct;saveAccounts(accounts);
+  return {ranked:false,reason:'Game finished too quickly to qualify as ranked.'};
+ }
+
+ // Quick Sim and Skip to Result share one fast-resolution allowance so users
+ // cannot bypass the anti-spam cap by launching a watched game and skipping it.
+ if(fastResolution){
+  const quickN=acct.quickSimCounts[date]||0;
+  if(quickN>=10){
+   accounts[user]=acct;saveAccounts(accounts);
+   return {ranked:false,reason:'Today’s 10 ranked fast-resolution games are used. You can keep playing casually.'};
+  }
+  acct.quickSimCounts[date]=quickN+1;
+ }
+
+ if(result.mode==='daily'){
+  if(acct.dailyAttempts[date]){
+   accounts[user]=acct;saveAccounts(accounts);
+   return {ranked:false,reason:'Daily Challenge replays are unranked. Your first attempt already counted.'};
+  }
+  acct.dailyAttempts[date]=result.matchId;
+ }else{
+  if((result.rerolls||0)>0){
+   accounts[user]=acct;saveAccounts(accounts);
+   return {ranked:false,reason:'Rerolled matchups are casual/unranked to prevent cherry-picking.'};
+  }
+
+  const pk=pairKey(result.userPlayer,result.cpuPlayer);
+  if(!acct.pairCounts[date])acct.pairCounts[date]={};
+  const pairN=acct.pairCounts[date][pk]||0;
+  if(pairN>=3){
+   accounts[user]=acct;saveAccounts(accounts);
+   return {ranked:false,reason:'This exact legend matchup has reached today’s 3-game ranked limit.'};
+  }
+
+  if(!acct.legendCounts[date])acct.legendCounts[date]={};
+  const aN=acct.legendCounts[date][result.userPlayer]||0,bN=acct.legendCounts[date][result.cpuPlayer]||0;
+  if(aN>=10||bN>=10){
+   accounts[user]=acct;saveAccounts(accounts);
+   return {ranked:false,reason:'Daily legend-impact limit reached for this account; you can keep playing casually.'};
+  }
+  acct.pairCounts[date][pk]=pairN+1;
+  acct.legendCounts[date][result.userPlayer]=aN+1;
+  acct.legendCounts[date][result.cpuPlayer]=bN+1;
+ }
+
+ accounts[user]=acct;saveAccounts(accounts);
+ return {ranked:true,reason:'Ranked result'};
+}
+
+function recordRankedGame(result){
+ const user=currentUser();if(!user)return;
+ const accounts=loadAccounts(),acct=normalizeAccount(accounts[user]);
+ const expected=Math.max(.08,Math.min(.92,Number(result.expectedWin||.5)));
+ const score=result.win?1:0,K=28;
+ acct.rating=Math.round(acct.rating+K*(score-expected));
+ acct.rankedGames++;
+ if(result.win){acct.wins++;acct.streak=acct.streak>=0?acct.streak+1:1}
+ else{acct.losses++;acct.streak=acct.streak<=0?acct.streak-1:-1}
+ acct.bestStreak=Math.max(acct.bestStreak||0,acct.streak>0?acct.streak:0);
+ acct.lastGame={...result,at:new Date().toISOString()};
+ accounts[user]=acct;saveAccounts(accounts);
+}
+
+function legendRank(name){
+ const stats=loadLegendStats();
+ const rows=GVG_ROSTER.map(n=>({name:n,rating:stats[n]?.rating||1500})).sort((a,b)=>b.rating-a.rating);
+ return rows.findIndex(r=>r.name===name)+1;
+}
+
+function getTodayGoat(){
+ const stats=loadLegendStats(),date=localDateKey();
+ const rows=[];
+ for(const name of GVG_ROSTER){
+  const d=stats[name]?.daily?.[date];
+  if(!d)continue;
+  const games=(d.wins||0)+(d.losses||0);
+  if(!games)continue;
+  rows.push({
+   name,
+   wins:d.wins||0,
+   losses:d.losses||0,
+   rating:typeof d.rating==='number'?d.rating:1500,
+   games
+  });
+ }
+ rows.sort((a,b)=>b.rating-a.rating||b.wins-a.wins||b.games-a.games||a.name.localeCompare(b.name));
+ return rows[0]||null;
+}
+function updateLandingTodayGoat(){
+ const nameEl=document.getElementById('landingTodayGoat');
+ const metaEl=document.getElementById('landingTodayGoatMeta');
+ if(!nameEl||!metaEl)return;
+ const leader=getTodayGoat();
+ if(!leader){
+  nameEl.textContent='No leader yet';
+  metaEl.textContent="Play a ranked matchup to start today's board.";
+  return;
+ }
+ nameEl.textContent=leader.name;
+ metaEl.textContent=`#1 today • ${leader.wins}-${leader.losses} • ${leader.rating} Elo`;
+}
+
+function updateProfileUI(){
+ const user=currentUser(),accounts=loadAccounts(),acct=user?normalizeAccount(accounts[user]):null;
+ if(acct){
+  document.getElementById('profileLabel').textContent=user;
+  document.getElementById('profileAvatar').textContent=initials(user);
+  document.getElementById('recordMini').textContent=`${acct.wins}-${acct.losses} • ${acct.rating}`;
+  document.getElementById('gameProfileLabel').textContent=`${user} • #${userRank(user)||'-'} • ${acct.rating}`;
+ }else{
+  document.getElementById('profileLabel').textContent='Log In';
+  document.getElementById('profileAvatar').textContent='?';
+  document.getElementById('recordMini').textContent='';
+  document.getElementById('gameProfileLabel').textContent='Log In';
+ }
+ updateLandingTodayGoat();
+}
+
+function openAccount(){
+ const user=currentUser(),accounts=loadAccounts(),acct=user?normalizeAccount(accounts[user]):null;
+ document.getElementById('accountModal').classList.add('show');document.getElementById('formMsg').textContent='';
+ if(acct){
+  document.getElementById('authArea').style.display='none';
+  document.getElementById('profileCard').classList.add('show');
+  document.getElementById('profileName').textContent=user;
+  document.getElementById('profileBigAvatar').textContent=initials(user);
+  document.getElementById('profileWins').textContent=acct.wins;
+  document.getElementById('profileLosses').textContent=acct.losses;
+  document.getElementById('profileStreak').textContent=acct.streak;
+  document.getElementById('profileRating').textContent=acct.rating;
+ }else{
+  document.getElementById('authArea').style.display='block';document.getElementById('profileCard').classList.remove('show');showAuth('login');
+ }
+}
+function closeAccount(){document.getElementById('accountModal').classList.remove('show')}
+function backdropClose(e){if(e.target.id==='accountModal')closeAccount()}
+function showAuth(mode){
+ const login=mode==='login';
+ document.getElementById('loginTab').classList.toggle('active',login);
+ document.getElementById('createTab').classList.toggle('active',!login);
+ document.getElementById('loginForm').style.display=login?'block':'none';
+ document.getElementById('createForm').style.display=login?'none':'block';
+ document.getElementById('formMsg').textContent='';
+}
+async function createAccount(){
+ const user=document.getElementById('createUser').value.trim(),pass=document.getElementById('createPass').value,msg=document.getElementById('formMsg');
+ if(!/^[A-Za-z0-9_ -]{3,20}$/.test(user)){msg.textContent='Use 3–20 letters, numbers, spaces, underscores, or hyphens.';return}
+ if(pass.length<4){msg.textContent='Password must be at least 4 characters.';return}
+ const accounts=loadAccounts(),key=Object.keys(accounts).find(k=>k.toLowerCase()===user.toLowerCase());
+ if(key){msg.textContent='That username already exists on this device.';return}
+ accounts[user]=normalizeAccount({passwordHash:await hashPassword(pass),createdAt:new Date().toISOString()});
+ saveAccounts(accounts);localStorage.setItem(SESSION_KEY,user);updateProfileUI();openAccount();
+}
+async function login(){
+ const input=document.getElementById('loginUser').value.trim(),pass=document.getElementById('loginPass').value,accounts=loadAccounts();
+ const user=Object.keys(accounts).find(k=>k.toLowerCase()===input.toLowerCase()),msg=document.getElementById('formMsg');
+ if(!user){msg.textContent='Account not found on this device.';return}
+ if(await hashPassword(pass)!==accounts[user].passwordHash){msg.textContent='Incorrect password.';return}
+ localStorage.setItem(SESSION_KEY,user);updateProfileUI();openAccount();
+}
+function logout(){localStorage.removeItem(SESSION_KEY);updateProfileUI();closeAccount()}
+
+function setRankingPosition(pos){
+ rankingPosition=['ALL','PG','SG','SF','PF','C'].includes(pos)?pos:'ALL';
+ document.querySelectorAll('.positionFilter').forEach(btn=>{
+  btn.classList.toggle('active',btn.dataset.pos===rankingPosition);
+ });
+ const activeTab=document.getElementById('todayRankTab').classList.contains('active')?'today':
+  document.getElementById('allTimeRankTab').classList.contains('active')?'all':null;
+ if(activeTab)showRankings(activeTab);
+}
+
+function updatePositionFilterVisibility(mode){
+ const wrap=document.getElementById('positionFilters');
+ if(!wrap)return;
+ wrap.style.display=(mode==='today'||mode==='all')?'flex':'none';
+ document.querySelectorAll('.positionFilter').forEach(btn=>{
+  btn.classList.toggle('active',btn.dataset.pos===rankingPosition);
+ });
+}
+
+function openRankings(mode='today',limit=0){
+ rankingPosition='ALL';
+ document.getElementById('rankingsModal').classList.add('show');
+ showRankings(mode,limit);
+}
+function closeRankings(){document.getElementById('rankingsModal').classList.remove('show')}
+function rankBackdropClose(e){if(e.target.id==='rankingsModal')closeRankings()}
+
+function showRankings(mode,limit=0){
+ for(const [id,m] of [['todayRankTab','today'],['allTimeRankTab','all'],['userRankTab','users'],['upsetRankTab','upsets']])
+  document.getElementById(id).classList.toggle('active',mode===m);
+
+ updatePositionFilterVisibility(mode);
+ const list=document.getElementById('rankList'),date=localDateKey();
+ document.getElementById('rankDateText').textContent=mode==='today'||mode==='upsets'?new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
+
+ if(mode==='users'){
+  const rows=Object.entries(loadAccounts()).map(([name,a])=>({name,...normalizeAccount(a)})).sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
+  document.getElementById('rankSummaryText').textContent='User Elo rankings';
+  document.getElementById('rankNote').textContent='Prototype: these are accounts on this device. Public rankings will move to server-verified accounts.';
+  list.innerHTML=rows.length?rows.map((r,i)=>`<div class="userRankRow"><div class="rankNo">#${i+1}</div><div class="rankPlayer">${r.name}</div><div class="rankRecord">${r.wins}-${r.losses}</div><div class="rankRating">${r.rating}</div></div>`).join(''):'<div class="rankEmpty">No ranked users yet.</div>';
+  return;
+ }
+ if(mode==='upsets'){
+  const rows=(loadUpsets()[date]||[]).slice(0,10);
+  document.getElementById('rankSummaryText').textContent='Top 10 upsets today';
+  document.getElementById('rankNote').textContent='Only ranked games qualify. Lower pregame win probability ranks higher.';
+  list.innerHTML=rows.length?rows.map((r,i)=>`<div class="upsetRow"><div class="upsetTop"><span>#${i+1} ${r.winner} over ${r.loser}</span><span>${Math.round(r.winnerChance*100)}%</span></div><div class="upsetSub">${r.score} • played by ${r.user}</div></div>`).join(''):'<div class="rankEmpty">No qualifying upsets today yet.</div>';
+  return;
+ }
+
+ const stats=loadLegendStats();let rows=[];
+ if(mode==='today'){
+  for(const name of GVG_ROSTER){
+   if(rankingPosition!=='ALL'&&GVG_POSITIONS[name]!==rankingPosition)continue;
+   const d=stats[name]?.daily?.[date]||{wins:0,losses:0,rating:1500},games=d.wins+d.losses;
+   if(games)rows.push({name,pos:GVG_POSITIONS[name],wins:d.wins,losses:d.losses,rating:d.rating||1500,games});
+  }
+  rows.sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
+  const posLabel=rankingPosition==='ALL'?'':` ${rankingPosition}`;
+  document.getElementById('rankSummaryText').textContent=`Today's${posLabel} GOAT board`;
+  document.getElementById('rankNote').textContent=rankingPosition==='ALL'
+   ?"Today's GOAT is the #1 daily Elo player. The board resets each day; W-L remains visible."
+   :`Highest-ranked ${rankingPosition} today by daily Elo. Primary positions are used for GOAT-by-position boards.`;
+ }else{
+  rows=GVG_ROSTER
+   .filter(name=>rankingPosition==='ALL'||GVG_POSITIONS[name]===rankingPosition)
+   .map(name=>{
+    const s=stats[name]||defaultLegendStat();
+    const games=(s.wins||0)+(s.losses||0);
+    const margin=games?((s.pointsFor||0)-(s.pointsAgainst||0))/games:0;
+    return {name,pos:GVG_POSITIONS[name],wins:s.wins||0,losses:s.losses||0,rating:s.rating||1500,margin};
+   });
+  rows.sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
+  if(limit>0)rows=rows.slice(0,limit);
+  const posLabel=rankingPosition==='ALL'?'':` ${rankingPosition}`;
+  document.getElementById('rankSummaryText').textContent=limit>0&&rankingPosition==='ALL'?'All-Time Top 10':`All-time${posLabel} GOAT Elo`;
+  document.getElementById('rankNote').textContent=rankingPosition==='ALL'
+   ?'All 100 players begin at 1500 Elo. Ranked games build the all-time board; record shows W-L and average point margin.'
+   :`All-time ${rankingPosition} ranking by Elo. Each player is assigned one primary position for GOAT-by-position comparisons.`;
+ }
+ list.innerHTML=rows.length?rows.map((r,i)=>{
+  const rec=r.margin===undefined?`${r.wins}-${r.losses}`:`${r.wins}-${r.losses} · ${r.margin>=0?'+':''}${r.margin.toFixed(1)}`;
+  const pos=r.pos||GVG_POSITIONS[r.name]||'';
+  return `<div class="rankRow"><div class="rankNo">#${i+1}</div><div class="rankPlayer rankPlayerWrap"><span class="rankPos">${pos}</span><span class="rankPlayerName">${r.name}</span></div><div class="rankRecord">${rec}</div><div class="rankRating">${r.rating}</div></div>`;
+ }).join(''):'<div class="rankEmpty">No ranked games yet for this position.</div>';
+}
+
+function showPostgame(result,elig){
+ lastPostgameResult=result;
+ const h=getH2H(result.userPlayer,result.cpuPlayer),user=currentUser(),accounts=loadAccounts(),acct=user?normalizeAccount(accounts[user]):null;
+ const winner=result.win?result.userPlayer:result.cpuPlayer,winnerChance=result.win?Number(result.expectedWin||.5):1-Number(result.expectedWin||.5);
+ document.getElementById('postLabel').textContent=winnerChance<=.42?'UPSET FINAL':'FINAL';
+ document.getElementById('postWinner').textContent=`${winner} wins`;
+ document.getElementById('postScore').textContent=`${Math.max(result.userScore,result.cpuScore)}–${Math.min(result.userScore,result.cpuScore)}`;
+ const st=document.getElementById('postStatus');st.className='postStatus '+(elig.ranked?'ranked':'unranked');
+ st.textContent=elig.ranked?'✓ Ranked result':`Casual / unranked — ${elig.reason}`;
+ document.getElementById('postH2H').textContent=`${result.userPlayer} ${h.allA}–${h.allB} ${result.cpuPlayer}`;
+ document.getElementById('postTodayH2H').textContent=`${result.userPlayer} ${h.todayA}–${h.todayB} ${result.cpuPlayer}`;
+ document.getElementById('postLegendRanks').textContent=`${result.userPlayer} #${legendRank(result.userPlayer)} • ${result.cpuPlayer} #${legendRank(result.cpuPlayer)}`;
+ document.getElementById('postUserRecord').textContent=acct?`${acct.wins}-${acct.losses} • ${acct.rating} Elo • #${userRank(user)}`:'Sign in to build a ranked record';
+ const simText=result.simMode==='quick'?'Quick Sim • same possession engine, animations skipped. ':result.simMode==='skip'?'Skipped to Result • resolved from the live game state. ':'';
+ document.getElementById('postExtra').textContent=simText+(winnerChance<=.42?`${winner} entered at roughly a ${Math.round(winnerChance*100)}% matchup chance.`:(result.mode==='daily'?'Daily Challenge complete. Only the first attempt can be ranked.':''));
+ document.getElementById('postReplayDaily').style.display=result.mode==='daily'?'block':'none';
+ document.getElementById('postgameModal').classList.add('show');
+}
+function closePostgame(){document.getElementById('postgameModal').classList.remove('show')}
+function postNextMatchup(){closePostgame();openGame('regular')}
+function postReplayDaily(){closePostgame();openGame('daily')}
+
+function processResult(d){
+ const elig=evaluateRankEligibility(d),user=currentUser();
+ if(elig.ranked){
+  updateLegendStats(d);updateH2H(d);addUpset(d,user);recordRankedGame(d);
+ }
+ updateProfileUI();
+ if(document.getElementById('rankingsModal').classList.contains('show'))showRankings('today');
+ showPostgame(d,elig);
+}
+
+window.addEventListener('message',e=>{
+ const d=e.data||{};
+ if(d.type==='goat-vs-goat-result')processResult(d);
+});
+
+function sendGameMode(mode){
+ const frame=document.getElementById('gameFrame');
+ try{frame.contentWindow.postMessage({type:mode==='daily'?'gvg-start-daily':'gvg-start-regular'},'*')}catch(e){}
+}
+function openGame(mode='regular'){
+ document.body.classList.add('game-open');window.scrollTo(0,0);
+ setTimeout(()=>sendGameMode(mode),40);
+}
+function openDailyChallenge(){openGame('daily')}
+function closeGame(){document.body.classList.remove('game-open');window.scrollTo(0,0)}
+
+updateProfileUI();
+</script>
+</body>
+</html>
