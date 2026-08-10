@@ -527,6 +527,27 @@ footer{color:#7f8a98}
  .gameShellBar .gcMiniText strong{font-size:9px}
 }
 
+
+/* Mobile typography fix: never split 1-ON-1 across lines. */
+.nowrap-one-on-one{
+    display:inline-block;
+    white-space:nowrap;
+}
+
+
+/* Connected beta: Supabase auth + global user ranking controls */
+.authHint{margin:-2px 0 11px;color:#778391;font-size:9px;line-height:1.45}
+.userTimeFilters{display:none;grid-template-columns:1fr 1fr;gap:7px;margin:0 0 10px}
+.userTimeFilter{border:1px solid #ffffff18;background:#0c121b;color:#9da9b8;border-radius:8px;padding:8px 10px;font-size:10px;font-weight:950;cursor:pointer}
+.userTimeFilter.active{background:#8b691f;color:#fff7dc;border-color:#d6aa43}
+.userGoatBanner{display:none;margin:0 0 10px;padding:10px 12px;border:1px solid #d6aa4355;border-radius:10px;background:linear-gradient(135deg,#d6aa431a,#0b111a);color:#fff7dc}
+.userGoatBanner.show{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.userGoatBanner strong{font-size:10px;letter-spacing:.08em;color:#d6aa43}
+.userGoatBanner span{font:900 11px/1.3 "Courier New",monospace;text-align:right}
+.provisionalTag{display:inline-block;margin-left:6px;padding:2px 5px;border:1px solid #ffffff18;border-radius:5px;color:#7f8b99;font-size:7px;letter-spacing:.04em;vertical-align:1px}
+.rankLoading{padding:26px 16px;text-align:center;color:#8f9baa;font-size:11px}
+@media(max-width:520px){.userGoatBanner.show{align-items:flex-start;flex-direction:column}.userGoatBanner span{text-align:left}}
+
 </style>
 <meta name="description" content="GOAT Court — where basketball greatness is put on trial. Pick a legend, choose your strategy, and simulate all-time 1-on-1 matchups.">
 </head>
@@ -558,8 +579,8 @@ footer{color:#7f8a98}
  <div class="gcHeroBrandText"><strong>GOAT COURT</strong><span>Where Greatness Is Put On Trial</span></div>
 </div>
 <div class="kicker"><span class="kdot"></span>100-Player Basketball 1-on-1 Simulator</div>
-  <h1><span class="grad">The Ultimate 1-on-1</span><br>Basketball Matchup Simulator</h1>
-  <p class="lead">Build your legacy. Defend your GOAT. See how the greatest players of all time stack up in head-to-head competition.</p>
+  <h1><span class="grad">Who&#39;s the GOAT?</span><br>Settle it on the court!</h1>
+  <p class="lead">Pick your legend, choose your strategy, and see how the greatest players of all time stack up head-to-head.</p>
   <div class="steps">
    <div class="step"><b>1. See the matchup</b><span>CPU legend is revealed first.</span></div>
    <div class="step"><b>2. Pick your legend</b><span>Choose one of three all-time greats, modern stars, or rising candidates.</span></div>
@@ -661,14 +682,16 @@ footer{color:#7f8a98}
    </div>
 
    <div id="loginForm">
-    <div class="formGroup"><label>Username</label><input id="loginUser" autocomplete="username"></div>
+    <div class="formGroup"><label>Email</label><input id="loginEmail" type="email" autocomplete="email"></div>
     <div class="formGroup"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password"></div>
     <button class="formAction" type="button" onclick="login()">Log In</button>
    </div>
 
    <div id="createForm" style="display:none">
     <div class="formGroup"><label>Username</label><input id="createUser" maxlength="20" autocomplete="username"></div>
-    <div class="formGroup"><label>Password</label><input id="createPass" type="password" minlength="4" autocomplete="new-password"></div>
+    <div class="formGroup"><label>Email</label><input id="createEmail" type="email" autocomplete="email"></div>
+    <div class="formGroup"><label>Password</label><input id="createPass" type="password" minlength="6" autocomplete="new-password"></div>
+    <div class="authHint">Your username is public. Your email is only used for sign-in and account recovery.</div>
     <button class="formAction" type="button" onclick="createAccount()">Create Account</button>
    </div>
    <div id="formMsg" class="formMsg"></div>
@@ -714,6 +737,11 @@ footer{color:#7f8a98}
    <button class="positionFilter" data-pos="PF" type="button" onclick="setRankingPosition('PF')">PF</button>
    <button class="positionFilter" data-pos="C" type="button" onclick="setRankingPosition('C')">C</button>
   </div>
+  <div id="userTimeFilters" class="userTimeFilters">
+   <button id="userDailyFilter" class="userTimeFilter active" type="button" onclick="setUserRankingPeriod('daily')">Daily</button>
+   <button id="userAllFilter" class="userTimeFilter" type="button" onclick="setUserRankingPeriod('all')">All-Time</button>
+  </div>
+  <div id="userGoatBanner" class="userGoatBanner"></div>
   <div class="rankSummary">
    <span id="rankSummaryText">Today's matchup records</span>
    <span id="rankDateText"></span>
@@ -2270,287 +2298,83 @@ newRoll(&#x27;regular&#x27;,true);
 &lt;/body&gt;&lt;/html&gt;"></iframe>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const ACCOUNTS_KEY='gvg_accounts_v2';
-const SESSION_KEY='gvg_session_v2';
-const PLAYER_STATS_KEY='gvg_player_stats_v5_roster100';
-const SIM_BASELINE_GAMES=1000;
-const SIM_BASELINE_SEED=20260809;
-const SIM_BASELINE_STATS={"Kareem Abdul-Jabbar":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Ray Allen":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Giannis Antetokounmpo":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Carmelo Anthony":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Nate Archibald":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Paul Arizin":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Charles Barkley":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Rick Barry":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Elgin Baylor":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dave Bing":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Larry Bird":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kobe Bryant":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Wilt Chamberlain":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bob Cousy":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dave Cowens":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Billy Cunningham":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Stephen Curry":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Anthony Davis":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dave DeBusschere":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Clyde Drexler":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tim Duncan":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kevin Durant":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Julius Erving":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Patrick Ewing":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Walt Frazier":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kevin Garnett":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"George Gervin":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Hal Greer":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"James Harden":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"John Havlicek":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Elvin Hayes":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Allen Iverson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"LeBron James":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Magic Johnson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Sam Jones":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Michael Jordan":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jason Kidd":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kawhi Leonard":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Damian Lillard":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jerry Lucas":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Karl Malone":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Moses Malone":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Pete Maravich":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bob McAdoo":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Kevin McHale":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"George Mikan":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Reggie Miller":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Earl Monroe":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Steve Nash":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dirk Nowitzki":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Shaquille O’Neal":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Hakeem Olajuwon":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Robert Parish":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Chris Paul":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Gary Payton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bob Pettit":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Paul Pierce":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Scottie Pippen":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Willis Reed":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Oscar Robertson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"David Robinson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dennis Rodman":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bill Russell":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dolph Schayes":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bill Sharman":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"John Stockton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Isiah Thomas":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Nate Thurmond":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Wes Unseld":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dwyane Wade":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Bill Walton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jerry West":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Russell Westbrook":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Lenny Wilkens":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dominique Wilkins":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"James Worthy":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Nikola Jokić":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Luka Dončić":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Shai Gilgeous-Alexander":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jayson Tatum":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Joel Embiid":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Anthony Edwards":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Devin Booker":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Donovan Mitchell":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jalen Brunson":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jaylen Brown":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Victor Wembanyama":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Cade Cunningham":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tyrese Maxey":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Jalen Williams":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Chet Holmgren":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tyrese Haliburton":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Ja Morant":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Cooper Flagg":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Dwight Howard":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Pau Gasol":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tony Parker":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Vince Carter":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Tracy McGrady":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}},"Manu Ginóbili":{"wins":0,"losses":0,"rating":1500,"games":0,"pointsFor":0,"pointsAgainst":0,"daily":{}}};
-const H2H_KEY='gvg_h2h_v1';
-const UPSETS_KEY='gvg_upsets_v1';
-const PROCESSED_KEY='gvg_processed_matches_v1';
+const SUPABASE_URL="https://oejwpbstnelayissbxla.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_wdsnimyCGO_RacrnASTS1A__0FA144u";
 const GVG_ROSTER=["Kareem Abdul-Jabbar","Ray Allen","Giannis Antetokounmpo","Carmelo Anthony","Nate Archibald","Paul Arizin","Charles Barkley","Rick Barry","Elgin Baylor","Dave Bing","Larry Bird","Kobe Bryant","Wilt Chamberlain","Bob Cousy","Dave Cowens","Billy Cunningham","Stephen Curry","Anthony Davis","Dave DeBusschere","Clyde Drexler","Tim Duncan","Kevin Durant","Julius Erving","Patrick Ewing","Walt Frazier","Kevin Garnett","George Gervin","Hal Greer","James Harden","John Havlicek","Elvin Hayes","Allen Iverson","LeBron James","Magic Johnson","Sam Jones","Michael Jordan","Jason Kidd","Kawhi Leonard","Damian Lillard","Jerry Lucas","Karl Malone","Moses Malone","Pete Maravich","Bob McAdoo","Kevin McHale","George Mikan","Reggie Miller","Earl Monroe","Steve Nash","Dirk Nowitzki","Shaquille O’Neal","Hakeem Olajuwon","Robert Parish","Chris Paul","Gary Payton","Bob Pettit","Paul Pierce","Scottie Pippen","Willis Reed","Oscar Robertson","David Robinson","Dennis Rodman","Bill Russell","Dolph Schayes","Bill Sharman","John Stockton","Isiah Thomas","Nate Thurmond","Wes Unseld","Dwyane Wade","Bill Walton","Jerry West","Russell Westbrook","Lenny Wilkens","Dominique Wilkins","James Worthy","Nikola Jokić","Luka Dončić","Shai Gilgeous-Alexander","Jayson Tatum","Joel Embiid","Anthony Edwards","Devin Booker","Donovan Mitchell","Jalen Brunson","Jaylen Brown","Victor Wembanyama","Cade Cunningham","Tyrese Maxey","Jalen Williams","Chet Holmgren","Tyrese Haliburton","Ja Morant","Cooper Flagg","Dwight Howard","Pau Gasol","Tony Parker","Vince Carter","Tracy McGrady","Manu Ginóbili"];
 const GVG_POSITIONS={"Nate Archibald":"PG","Dave Bing":"PG","Bob Cousy":"PG","Walt Frazier":"PG","Jason Kidd":"PG","Magic Johnson":"PG","Steve Nash":"PG","Chris Paul":"PG","Gary Payton":"PG","John Stockton":"PG","Isiah Thomas":"PG","Russell Westbrook":"PG","Lenny Wilkens":"PG","Stephen Curry":"PG","Damian Lillard":"PG","Oscar Robertson":"PG","Luka Dončić":"PG","Shai Gilgeous-Alexander":"PG","Jalen Brunson":"PG","Cade Cunningham":"PG","Tyrese Maxey":"PG","Tyrese Haliburton":"PG","Ja Morant":"PG","Tony Parker":"PG","Ray Allen":"SG","Kobe Bryant":"SG","Clyde Drexler":"SG","George Gervin":"SG","Hal Greer":"SG","James Harden":"SG","Sam Jones":"SG","Michael Jordan":"SG","Pete Maravich":"SG","Reggie Miller":"SG","Earl Monroe":"SG","Bill Sharman":"SG","Dwyane Wade":"SG","Jerry West":"SG","Anthony Edwards":"SG","Devin Booker":"SG","Donovan Mitchell":"SG","Jaylen Brown":"SG","Vince Carter":"SG","Tracy McGrady":"SG","Manu Ginóbili":"SG","Allen Iverson":"SG","Carmelo Anthony":"SF","Paul Arizin":"SF","Rick Barry":"SF","Elgin Baylor":"SF","Larry Bird":"SF","Kevin Durant":"SF","Julius Erving":"SF","John Havlicek":"SF","LeBron James":"SF","Kawhi Leonard":"SF","Paul Pierce":"SF","Scottie Pippen":"SF","Dominique Wilkins":"SF","James Worthy":"SF","Jayson Tatum":"SF","Jalen Williams":"SF","Cooper Flagg":"SF","Billy Cunningham":"SF","Giannis Antetokounmpo":"PF","Charles Barkley":"PF","Dave DeBusschere":"PF","Tim Duncan":"PF","Kevin Garnett":"PF","Elvin Hayes":"PF","Jerry Lucas":"PF","Karl Malone":"PF","Kevin McHale":"PF","Bob Pettit":"PF","Dennis Rodman":"PF","Dolph Schayes":"PF","Wes Unseld":"PF","Anthony Davis":"PF","Pau Gasol":"PF","Dirk Nowitzki":"PF","Kareem Abdul-Jabbar":"C","Wilt Chamberlain":"C","Dave Cowens":"C","Patrick Ewing":"C","George Mikan":"C","Moses Malone":"C","Bob McAdoo":"C","Shaquille O’Neal":"C","Hakeem Olajuwon":"C","Robert Parish":"C","Willis Reed":"C","David Robinson":"C","Bill Russell":"C","Nate Thurmond":"C","Bill Walton":"C","Joel Embiid":"C","Victor Wembanyama":"C","Chet Holmgren":"C","Dwight Howard":"C","Nikola Jokić":"C"};
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+
+let authUser=null;
+let serverProfile=null;
 let rankingPosition='ALL';
+let userRankingPeriod='daily';
+let lastRankingMode='today';
+let lastRankingLimit=0;
 let lastPostgameResult=null;
 
-function localDateKey(d=new Date()){
- const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
- return `${y}-${m}-${day}`;
-}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function goatDayKey(){return new Date().toISOString().slice(0,10)}
+function displayGoatDay(day){return new Date(day+'T12:00:00Z').toLocaleDateString(undefined,{month:'short',day:'numeric'})}
 function pairKey(a,b){return [a,b].sort((x,y)=>x.localeCompare(y)).join('|||')}
-function expectedScore(rA,rB){return 1/(1+Math.pow(10,(rB-rA)/400))}
-
-function defaultLegendStat(){return {wins:0,losses:0,rating:1500,games:0,pointsFor:0,pointsAgainst:0,daily:{}}}
-function baselineLegendStats(){
- return JSON.parse(JSON.stringify(SIM_BASELINE_STATS));
-}
-function loadLegendStats(){
- let s=null;
- try{
-  const raw=localStorage.getItem(PLAYER_STATS_KEY);
-  s=raw?JSON.parse(raw):null;
- }catch(e){}
- if(!s)s=baselineLegendStats();
- for(const n of GVG_ROSTER){
-  if(!s[n])s[n]=defaultLegendStat();
-  if(typeof s[n].rating!=='number')s[n].rating=1500;
-  if(typeof s[n].pointsFor!=='number')s[n].pointsFor=0;
-  if(typeof s[n].pointsAgainst!=='number')s[n].pointsAgainst=0;
-  if(!s[n].daily)s[n].daily={};
- }
- return s;
-}
-function saveLegendStats(s){localStorage.setItem(PLAYER_STATS_KEY,JSON.stringify(s))}
-
-function updateLegendStats(result){
- const stats=loadLegendStats(),a=result.userPlayer,b=result.cpuPlayer,date=localDateKey();
- const A=stats[a]||defaultLegendStat(),B=stats[b]||defaultLegendStat();
- if(!A.daily[date])A.daily[date]={wins:0,losses:0,rating:1500};
- if(!B.daily[date])B.daily[date]={wins:0,losses:0,rating:1500};
- if(typeof A.daily[date].rating!=='number')A.daily[date].rating=1500;
- if(typeof B.daily[date].rating!=='number')B.daily[date].rating=1500;
-
- const sa=result.win?1:0,sb=1-sa;
- A.games++;B.games++;
- A.pointsFor+=(result.userScore||0);A.pointsAgainst+=(result.cpuScore||0);
- B.pointsFor+=(result.cpuScore||0);B.pointsAgainst+=(result.userScore||0);
- if(result.win){A.wins++;B.losses++;A.daily[date].wins++;B.daily[date].losses++}
- else{A.losses++;B.wins++;A.daily[date].losses++;B.daily[date].wins++}
-
- const K=24,ra=A.rating,rb=B.rating;
- A.rating=Math.round(ra+K*(sa-expectedScore(ra,rb)));
- B.rating=Math.round(rb+K*(sb-expectedScore(rb,ra)));
-
- const drA=A.daily[date].rating,drB=B.daily[date].rating,DK=28;
- A.daily[date].rating=Math.round(drA+DK*(sa-expectedScore(drA,drB)));
- B.daily[date].rating=Math.round(drB+DK*(sb-expectedScore(drB,drA)));
-
- stats[a]=A;stats[b]=B;saveLegendStats(stats);
-}
-
-function loadH2H(){try{return JSON.parse(localStorage.getItem(H2H_KEY)||'{}')}catch(e){return {}}}
-function saveH2H(h){localStorage.setItem(H2H_KEY,JSON.stringify(h))}
-function updateH2H(result){
- const h=loadH2H(),key=pairKey(result.userPlayer,result.cpuPlayer),date=localDateKey();
- if(!h[key])h[key]={wins:{},daily:{}};
- const row=h[key]; if(!row.daily[date])row.daily[date]={};
- const winner=result.win?result.userPlayer:result.cpuPlayer;
- row.wins[winner]=(row.wins[winner]||0)+1;
- row.daily[date][winner]=(row.daily[date][winner]||0)+1;
- h[key]=row;saveH2H(h);
-}
-function getH2H(a,b){
- const row=loadH2H()[pairKey(a,b)]||{wins:{},daily:{}},date=localDateKey();
- return {
-  allA:row.wins[a]||0,allB:row.wins[b]||0,
-  todayA:(row.daily[date]||{})[a]||0,todayB:(row.daily[date]||{})[b]||0
- };
-}
-
-function loadUpsets(){try{return JSON.parse(localStorage.getItem(UPSETS_KEY)||'{}')}catch(e){return {}}}
-function addUpset(result,user){
- const winnerChance=result.win?Number(result.expectedWin||.5):1-Number(result.expectedWin||.5);
- if(winnerChance>.42)return;
- const u=loadUpsets(),date=localDateKey();
- if(!u[date])u[date]=[];
- u[date].push({
-  winner:result.win?result.userPlayer:result.cpuPlayer,
-  loser:result.win?result.cpuPlayer:result.userPlayer,
-  winnerChance,
-  score:`${Math.max(result.userScore,result.cpuScore)}-${Math.min(result.userScore,result.cpuScore)}`,
-  user:user||'Player',matchId:result.matchId||'',at:Date.now()
- });
- u[date]=u[date].sort((a,b)=>a.winnerChance-b.winnerChance||b.at-a.at).slice(0,25);
- localStorage.setItem(UPSETS_KEY,JSON.stringify(u));
-}
-
-function loadAccounts(){try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)||'{}')}catch(e){return {}}}
-function saveAccounts(a){localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(a))}
-function currentUser(){return localStorage.getItem(SESSION_KEY)||''}
+function currentUser(){return serverProfile?.username||''}
 function initials(name){return (name||'?').slice(0,2).toUpperCase()}
-function normalizeAccount(a){
- a=a||{};
- if(typeof a.wins!=='number')a.wins=0;if(typeof a.losses!=='number')a.losses=0;
- if(typeof a.streak!=='number')a.streak=0;if(typeof a.rating!=='number')a.rating=1500;
- if(typeof a.rankedGames!=='number')a.rankedGames=a.wins+a.losses;
- if(!a.pairCounts)a.pairCounts={};if(!a.legendCounts)a.legendCounts={};if(!a.dailyAttempts)a.dailyAttempts={};
- if(!a.quickSimCounts)a.quickSimCounts={};
- return a;
-}
-function userRank(username){
- const accounts=loadAccounts();
- const rows=Object.entries(accounts).map(([name,a])=>({name,...normalizeAccount(a)})).sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
- const i=rows.findIndex(r=>r.name===username);return i>=0?i+1:null;
+function backendMessage(error){
+ const text=String(error?.message||error||'');
+ if(/relation .* does not exist|schema cache|could not find the table|PGRST205|42P01/i.test(text))return 'GOAT Court database setup is not complete yet.';
+ return text||'The ranking server is unavailable right now.';
 }
 
-async function hashPassword(text){
- const data=new TextEncoder().encode(text),digest=await crypto.subtle.digest('SHA-256',data);
- return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+async function loadMyProfile(){
+ if(!authUser){serverProfile=null;return null}
+ const {data,error}=await sb.from('profiles').select('id,username,wins,losses,rating,ranked_games,streak,best_streak,created_at').eq('id',authUser.id).maybeSingle();
+ if(error){console.error('profile',error);serverProfile=null;return null}
+ serverProfile=data||null;return serverProfile;
 }
 
-function processedIds(){
- try{return JSON.parse(localStorage.getItem(PROCESSED_KEY)||'[]')}catch(e){return []}
-}
-function markProcessed(id){
- if(!id)return;
- let ids=processedIds();if(ids.includes(id))return;
- ids.push(id);ids=ids.slice(-300);localStorage.setItem(PROCESSED_KEY,JSON.stringify(ids));
+async function getAllTimeUserRank(userId){
+ if(!userId)return null;
+ const {data,error}=await sb.from('profiles').select('id,username,rating,wins,ranked_games').gt('ranked_games',0).order('rating',{ascending:false}).order('wins',{ascending:false}).order('username',{ascending:true});
+ if(error)return null;
+ const i=(data||[]).findIndex(r=>r.id===userId);return i>=0?i+1:null;
 }
 
-function evaluateRankEligibility(result){
- const user=currentUser();
- if(!user)return {ranked:false,reason:'Sign in to make games count toward rankings.'};
- if(!result.matchId)return {ranked:false,reason:'Missing ranked match ID.'};
- if(processedIds().includes(result.matchId))return {ranked:false,reason:'Duplicate result ignored.'};
- markProcessed(result.matchId);
-
- const accounts=loadAccounts(),acct=normalizeAccount(accounts[user]),date=localDateKey();
-
- const fastResolution=result.simMode==='quick'||result.simMode==='skip';
- if(!fastResolution && (result.durationMs||0)<5000){
-  accounts[user]=acct;saveAccounts(accounts);
-  return {ranked:false,reason:'Game finished too quickly to qualify as ranked.'};
- }
-
- // Quick Sim and Skip to Result share one fast-resolution allowance so users
- // cannot bypass the anti-spam cap by launching a watched game and skipping it.
- if(fastResolution){
-  const quickN=acct.quickSimCounts[date]||0;
-  if(quickN>=10){
-   accounts[user]=acct;saveAccounts(accounts);
-   return {ranked:false,reason:'Today’s 10 ranked fast-resolution games are used. You can keep playing casually.'};
-  }
-  acct.quickSimCounts[date]=quickN+1;
- }
-
- if(result.mode==='daily'){
-  if(acct.dailyAttempts[date]){
-   accounts[user]=acct;saveAccounts(accounts);
-   return {ranked:false,reason:'Daily Challenge replays are unranked. Your first attempt already counted.'};
-  }
-  acct.dailyAttempts[date]=result.matchId;
- }else{
-  if((result.rerolls||0)>0){
-   accounts[user]=acct;saveAccounts(accounts);
-   return {ranked:false,reason:'Rerolled matchups are casual/unranked to prevent cherry-picking.'};
-  }
-
-  const pk=pairKey(result.userPlayer,result.cpuPlayer);
-  if(!acct.pairCounts[date])acct.pairCounts[date]={};
-  const pairN=acct.pairCounts[date][pk]||0;
-  if(pairN>=3){
-   accounts[user]=acct;saveAccounts(accounts);
-   return {ranked:false,reason:'This exact legend matchup has reached today’s 3-game ranked limit.'};
-  }
-
-  if(!acct.legendCounts[date])acct.legendCounts[date]={};
-  const aN=acct.legendCounts[date][result.userPlayer]||0,bN=acct.legendCounts[date][result.cpuPlayer]||0;
-  if(aN>=10||bN>=10){
-   accounts[user]=acct;saveAccounts(accounts);
-   return {ranked:false,reason:'Daily legend-impact limit reached for this account; you can keep playing casually.'};
-  }
-  acct.pairCounts[date][pk]=pairN+1;
-  acct.legendCounts[date][result.userPlayer]=aN+1;
-  acct.legendCounts[date][result.cpuPlayer]=bN+1;
- }
-
- accounts[user]=acct;saveAccounts(accounts);
- return {ranked:true,reason:'Ranked result'};
-}
-
-function recordRankedGame(result){
- const user=currentUser();if(!user)return;
- const accounts=loadAccounts(),acct=normalizeAccount(accounts[user]);
- const expected=Math.max(.08,Math.min(.92,Number(result.expectedWin||.5)));
- const score=result.win?1:0,K=28;
- acct.rating=Math.round(acct.rating+K*(score-expected));
- acct.rankedGames++;
- if(result.win){acct.wins++;acct.streak=acct.streak>=0?acct.streak+1:1}
- else{acct.losses++;acct.streak=acct.streak<=0?acct.streak-1:-1}
- acct.bestStreak=Math.max(acct.bestStreak||0,acct.streak>0?acct.streak:0);
- acct.lastGame={...result,at:new Date().toISOString()};
- accounts[user]=acct;saveAccounts(accounts);
-}
-
-function legendRank(name){
- const stats=loadLegendStats();
- const rows=GVG_ROSTER.map(n=>({name:n,rating:stats[n]?.rating||1500})).sort((a,b)=>b.rating-a.rating);
- return rows.findIndex(r=>r.name===name)+1;
-}
-
-function getTodayGoat(){
- const stats=loadLegendStats(),date=localDateKey();
- const rows=[];
- for(const name of GVG_ROSTER){
-  const d=stats[name]?.daily?.[date];
-  if(!d)continue;
-  const games=(d.wins||0)+(d.losses||0);
-  if(!games)continue;
-  rows.push({
-   name,
-   wins:d.wins||0,
-   losses:d.losses||0,
-   rating:typeof d.rating==='number'?d.rating:1500,
-   games
-  });
- }
- rows.sort((a,b)=>b.rating-a.rating||b.wins-a.wins||b.games-a.games||a.name.localeCompare(b.name));
- return rows[0]||null;
-}
-function updateLandingTodayGoat(){
- const nameEl=document.getElementById('landingTodayGoat');
- const metaEl=document.getElementById('landingTodayGoatMeta');
+async function updateLandingTodayGoat(){
+ const nameEl=document.getElementById('landingTodayGoat'),metaEl=document.getElementById('landingTodayGoatMeta');
  if(!nameEl||!metaEl)return;
- const leader=getTodayGoat();
- if(!leader){
-  nameEl.textContent='No leader yet';
-  metaEl.textContent="Play a ranked matchup to start today's board.";
-  return;
- }
- nameEl.textContent=leader.name;
- metaEl.textContent=`#1 today • ${leader.wins}-${leader.losses} • ${leader.rating} Elo`;
+ const day=goatDayKey();
+ const {data,error}=await sb.from('legend_daily_stats').select('player,wins,losses,rating,games').eq('game_day',day).order('rating',{ascending:false}).order('wins',{ascending:false}).limit(1);
+ if(error){nameEl.textContent='Rankings offline';metaEl.textContent=backendMessage(error);return}
+ const leader=data?.[0];
+ if(!leader){nameEl.textContent='No leader yet';metaEl.textContent="Play a ranked matchup to start today's board.";return}
+ nameEl.textContent=leader.player;metaEl.textContent=`#1 today • ${leader.wins}-${leader.losses} • ${leader.rating} Elo`;
 }
 
-function updateProfileUI(){
- const user=currentUser(),accounts=loadAccounts(),acct=user?normalizeAccount(accounts[user]):null;
- if(acct){
-  document.getElementById('profileLabel').textContent=user;
-  document.getElementById('profileAvatar').textContent=initials(user);
-  document.getElementById('recordMini').textContent=`${acct.wins}-${acct.losses} • ${acct.rating}`;
-  document.getElementById('gameProfileLabel').textContent=`${user} • #${userRank(user)||'-'} • ${acct.rating}`;
+async function updateProfileUI(){
+ const p=serverProfile;
+ if(p){
+  document.getElementById('profileLabel').textContent=p.username;
+  document.getElementById('profileAvatar').textContent=initials(p.username);
+  document.getElementById('recordMini').textContent=`${p.wins}-${p.losses} • ${p.rating}`;
+  document.getElementById('gameProfileLabel').textContent=`${p.username} • ${p.rating} Elo`;
+  const rank=await getAllTimeUserRank(p.id);
+  if(serverProfile?.id===p.id)document.getElementById('gameProfileLabel').textContent=`${p.username} • #${rank||'-'} • ${p.rating}`;
  }else{
-  document.getElementById('profileLabel').textContent='Log In';
-  document.getElementById('profileAvatar').textContent='?';
-  document.getElementById('recordMini').textContent='';
-  document.getElementById('gameProfileLabel').textContent='Log In';
+  document.getElementById('profileLabel').textContent='Log In';document.getElementById('profileAvatar').textContent='?';
+  document.getElementById('recordMini').textContent='';document.getElementById('gameProfileLabel').textContent='Log In';
  }
- updateLandingTodayGoat();
+ await updateLandingTodayGoat();
 }
 
 function openAccount(){
- const user=currentUser(),accounts=loadAccounts(),acct=user?normalizeAccount(accounts[user]):null;
- document.getElementById('accountModal').classList.add('show');document.getElementById('formMsg').textContent='';
- if(acct){
-  document.getElementById('authArea').style.display='none';
-  document.getElementById('profileCard').classList.add('show');
-  document.getElementById('profileName').textContent=user;
-  document.getElementById('profileBigAvatar').textContent=initials(user);
-  document.getElementById('profileWins').textContent=acct.wins;
-  document.getElementById('profileLosses').textContent=acct.losses;
-  document.getElementById('profileStreak').textContent=acct.streak;
-  document.getElementById('profileRating').textContent=acct.rating;
+ const p=serverProfile,msg=document.getElementById('formMsg');
+ document.getElementById('accountModal').classList.add('show');msg.textContent='';
+ if(p){
+  document.getElementById('authArea').style.display='none';document.getElementById('profileCard').classList.add('show');
+  document.getElementById('profileName').textContent=p.username;document.getElementById('profileBigAvatar').textContent=initials(p.username);
+  document.getElementById('profileWins').textContent=p.wins;document.getElementById('profileLosses').textContent=p.losses;
+  document.getElementById('profileStreak').textContent=p.streak;document.getElementById('profileRating').textContent=p.rating;
  }else{
   document.getElementById('authArea').style.display='block';document.getElementById('profileCard').classList.remove('show');showAuth('login');
  }
@@ -2559,166 +2383,205 @@ function closeAccount(){document.getElementById('accountModal').classList.remove
 function backdropClose(e){if(e.target.id==='accountModal')closeAccount()}
 function showAuth(mode){
  const login=mode==='login';
- document.getElementById('loginTab').classList.toggle('active',login);
- document.getElementById('createTab').classList.toggle('active',!login);
- document.getElementById('loginForm').style.display=login?'block':'none';
- document.getElementById('createForm').style.display=login?'none':'block';
+ document.getElementById('loginTab').classList.toggle('active',login);document.getElementById('createTab').classList.toggle('active',!login);
+ document.getElementById('loginForm').style.display=login?'block':'none';document.getElementById('createForm').style.display=login?'none':'block';
  document.getElementById('formMsg').textContent='';
 }
+
 async function createAccount(){
- const user=document.getElementById('createUser').value.trim(),pass=document.getElementById('createPass').value,msg=document.getElementById('formMsg');
- if(!/^[A-Za-z0-9_ -]{3,20}$/.test(user)){msg.textContent='Use 3–20 letters, numbers, spaces, underscores, or hyphens.';return}
- if(pass.length<4){msg.textContent='Password must be at least 4 characters.';return}
- const accounts=loadAccounts(),key=Object.keys(accounts).find(k=>k.toLowerCase()===user.toLowerCase());
- if(key){msg.textContent='That username already exists on this device.';return}
- accounts[user]=normalizeAccount({passwordHash:await hashPassword(pass),createdAt:new Date().toISOString()});
- saveAccounts(accounts);localStorage.setItem(SESSION_KEY,user);updateProfileUI();openAccount();
+ const username=document.getElementById('createUser').value.trim();
+ const email=document.getElementById('createEmail').value.trim();
+ const password=document.getElementById('createPass').value;
+ const msg=document.getElementById('formMsg');
+ if(!/^[A-Za-z0-9_ -]{3,20}$/.test(username)){msg.textContent='Use 3–20 letters, numbers, spaces, underscores, or hyphens.';return}
+ if(!/^\S+@\S+\.\S+$/.test(email)){msg.textContent='Enter a valid email address.';return}
+ if(password.length<6){msg.textContent='Password must be at least 6 characters.';return}
+ msg.textContent='Creating account…';
+ const avail=await sb.rpc('username_available',{p_username:username});
+ if(avail.error){msg.textContent=backendMessage(avail.error);return}
+ if(!avail.data){msg.textContent='That username is already taken.';return}
+ const redirect=(location.protocol==='http:'||location.protocol==='https:')?(location.origin+location.pathname):'https://caleb-mckinney.github.io/goatvsgoat/';
+ const {data,error}=await sb.auth.signUp({email,password,options:{data:{username},emailRedirectTo:redirect}});
+ if(error){msg.textContent=error.message;return}
+ if(data.session){
+  authUser=data.user;await loadMyProfile();await updateProfileUI();openAccount();
+ }else{
+  msg.textContent='Account created. Check your email to confirm it, then log in.';
+ }
 }
+
 async function login(){
- const input=document.getElementById('loginUser').value.trim(),pass=document.getElementById('loginPass').value,accounts=loadAccounts();
- const user=Object.keys(accounts).find(k=>k.toLowerCase()===input.toLowerCase()),msg=document.getElementById('formMsg');
- if(!user){msg.textContent='Account not found on this device.';return}
- if(await hashPassword(pass)!==accounts[user].passwordHash){msg.textContent='Incorrect password.';return}
- localStorage.setItem(SESSION_KEY,user);updateProfileUI();openAccount();
+ const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPass').value,msg=document.getElementById('formMsg');
+ if(!email||!password){msg.textContent='Enter your email and password.';return}
+ msg.textContent='Signing in…';
+ const {data,error}=await sb.auth.signInWithPassword({email,password});
+ if(error){msg.textContent=error.message;return}
+ authUser=data.user;await loadMyProfile();
+ if(!serverProfile){msg.textContent='Signed in, but the GOAT Court profile database is not ready.';return}
+ await updateProfileUI();openAccount();
 }
-function logout(){localStorage.removeItem(SESSION_KEY);updateProfileUI();closeAccount()}
+async function logout(){await sb.auth.signOut();authUser=null;serverProfile=null;await updateProfileUI();closeAccount()}
 
 function setRankingPosition(pos){
  rankingPosition=['ALL','PG','SG','SF','PF','C'].includes(pos)?pos:'ALL';
- document.querySelectorAll('.positionFilter').forEach(btn=>{
-  btn.classList.toggle('active',btn.dataset.pos===rankingPosition);
- });
- const activeTab=document.getElementById('todayRankTab').classList.contains('active')?'today':
-  document.getElementById('allTimeRankTab').classList.contains('active')?'all':null;
- if(activeTab)showRankings(activeTab);
+ document.querySelectorAll('.positionFilter').forEach(btn=>btn.classList.toggle('active',btn.dataset.pos===rankingPosition));
+ if(lastRankingMode==='today'||lastRankingMode==='all')showRankings(lastRankingMode,lastRankingLimit);
 }
-
-function updatePositionFilterVisibility(mode){
- const wrap=document.getElementById('positionFilters');
- if(!wrap)return;
- wrap.style.display=(mode==='today'||mode==='all')?'flex':'none';
- document.querySelectorAll('.positionFilter').forEach(btn=>{
-  btn.classList.toggle('active',btn.dataset.pos===rankingPosition);
- });
+function setUserRankingPeriod(period){
+ userRankingPeriod=period==='all'?'all':'daily';
+ document.getElementById('userDailyFilter').classList.toggle('active',userRankingPeriod==='daily');
+ document.getElementById('userAllFilter').classList.toggle('active',userRankingPeriod==='all');
+ showRankings('users');
 }
-
-function openRankings(mode='today',limit=0){
- rankingPosition='ALL';
- document.getElementById('rankingsModal').classList.add('show');
- showRankings(mode,limit);
+function updateRankingControls(mode){
+ const pos=document.getElementById('positionFilters'),times=document.getElementById('userTimeFilters'),goat=document.getElementById('userGoatBanner');
+ pos.style.display=(mode==='today'||mode==='all')?'flex':'none';
+ times.style.display=mode==='users'?'grid':'none';
+ if(mode!=='users'){goat.classList.remove('show');goat.innerHTML=''}
+ document.querySelectorAll('.positionFilter').forEach(btn=>btn.classList.toggle('active',btn.dataset.pos===rankingPosition));
+ document.getElementById('userDailyFilter').classList.toggle('active',userRankingPeriod==='daily');
+ document.getElementById('userAllFilter').classList.toggle('active',userRankingPeriod==='all');
 }
+function openRankings(mode='today',limit=0){rankingPosition='ALL';lastRankingLimit=limit;document.getElementById('rankingsModal').classList.add('show');showRankings(mode,limit)}
 function closeRankings(){document.getElementById('rankingsModal').classList.remove('show')}
 function rankBackdropClose(e){if(e.target.id==='rankingsModal')closeRankings()}
+function rankError(error){
+ document.getElementById('rankList').innerHTML=`<div class="rankEmpty">${esc(backendMessage(error))}</div>`;
+ document.getElementById('rankNote').textContent='Global rankings require the GOAT Court Supabase schema.';
+}
+function renderUserGoat(rows,period){
+ const min=period==='daily'?3:10,banner=document.getElementById('userGoatBanner');
+ const goat=rows.find(r=>Number(period==='daily'?r.games:r.ranked_games)>=min);
+ banner.classList.add('show');
+ if(goat){
+  const games=period==='daily'?goat.games:goat.ranked_games;
+  banner.innerHTML=`<strong>${period==='daily'?'DAILY USER GOAT':'ALL-TIME USER GOAT'}</strong><span>🐐 ${esc(goat.username)} • ${goat.wins}-${goat.losses} • ${goat.rating} Elo</span>`;
+ }else{
+  banner.innerHTML=`<strong>${period==='daily'?'DAILY USER GOAT':'ALL-TIME USER GOAT'}</strong><span>No qualifier yet • ${min} ranked games required</span>`;
+ }
+ return goat?.id||goat?.user_id||null;
+}
 
-function showRankings(mode,limit=0){
- for(const [id,m] of [['todayRankTab','today'],['allTimeRankTab','all'],['userRankTab','users'],['upsetRankTab','upsets']])
-  document.getElementById(id).classList.toggle('active',mode===m);
-
- updatePositionFilterVisibility(mode);
- const list=document.getElementById('rankList'),date=localDateKey();
- document.getElementById('rankDateText').textContent=mode==='today'||mode==='upsets'?new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
+async function showRankings(mode,limit=0){
+ lastRankingMode=mode;lastRankingLimit=limit;
+ for(const [id,m] of [['todayRankTab','today'],['allTimeRankTab','all'],['userRankTab','users'],['upsetRankTab','upsets']])document.getElementById(id).classList.toggle('active',mode===m);
+ updateRankingControls(mode);
+ const list=document.getElementById('rankList'),day=goatDayKey();
+ list.innerHTML='<div class="rankLoading">Loading the Court Record…</div>';document.getElementById('rankNote').textContent='';
+ document.getElementById('rankDateText').textContent=(mode==='today'||mode==='upsets'||(mode==='users'&&userRankingPeriod==='daily'))?`${displayGoatDay(day)} UTC`:'';
 
  if(mode==='users'){
-  const rows=Object.entries(loadAccounts()).map(([name,a])=>({name,...normalizeAccount(a)})).sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
-  document.getElementById('rankSummaryText').textContent='User Elo rankings';
-  document.getElementById('rankNote').textContent='Prototype: these are accounts on this device. Public rankings will move to server-verified accounts.';
-  list.innerHTML=rows.length?rows.map((r,i)=>`<div class="userRankRow"><div class="rankNo">#${i+1}</div><div class="rankPlayer">${r.name}</div><div class="rankRecord">${r.wins}-${r.losses}</div><div class="rankRating">${r.rating}</div></div>`).join(''):'<div class="rankEmpty">No ranked users yet.</div>';
-  return;
- }
- if(mode==='upsets'){
-  const rows=(loadUpsets()[date]||[]).slice(0,10);
-  document.getElementById('rankSummaryText').textContent='Top 10 upsets today';
-  document.getElementById('rankNote').textContent='Only ranked games qualify. Lower pregame win probability ranks higher.';
-  list.innerHTML=rows.length?rows.map((r,i)=>`<div class="upsetRow"><div class="upsetTop"><span>#${i+1} ${r.winner} over ${r.loser}</span><span>${Math.round(r.winnerChance*100)}%</span></div><div class="upsetSub">${r.score} • played by ${r.user}</div></div>`).join(''):'<div class="rankEmpty">No qualifying upsets today yet.</div>';
+  if(userRankingPeriod==='daily'){
+   const {data,error}=await sb.from('user_daily_stats').select('user_id,username,wins,losses,rating,games').eq('game_day',day).gt('games',0).order('rating',{ascending:false}).order('wins',{ascending:false}).order('username',{ascending:true});
+   if(error){rankError(error);return}
+   const rows=data||[],goatId=renderUserGoat(rows,'daily');
+   document.getElementById('rankSummaryText').textContent='Daily user rankings';
+   document.getElementById('rankNote').textContent='Global daily Elo • resets at 00:00 UTC • 3 ranked games required to hold Daily User GOAT.';
+   list.innerHTML=rows.length?rows.map((r,i)=>{const prov=r.games<3;return `<div class="userRankRow"><div class="rankNo">#${i+1}</div><div class="rankPlayer">${r.user_id===goatId?'🐐 ':''}${esc(r.username)}${prov?'<span class="provisionalTag">PROV</span>':''}</div><div class="rankRecord">${r.wins}-${r.losses}</div><div class="rankRating">${r.rating}</div></div>`}).join(''):'<div class="rankEmpty">No ranked users yet today.</div>';
+  }else{
+   const {data,error}=await sb.from('profiles').select('id,username,wins,losses,rating,ranked_games').gt('ranked_games',0).order('rating',{ascending:false}).order('wins',{ascending:false}).order('username',{ascending:true});
+   if(error){rankError(error);return}
+   const rows=data||[],goatId=renderUserGoat(rows,'all');
+   document.getElementById('rankSummaryText').textContent='All-time user rankings';
+   document.getElementById('rankNote').textContent='Global all-time Elo • 10 ranked games required to hold All-Time User GOAT.';
+   list.innerHTML=rows.length?rows.map((r,i)=>{const prov=r.ranked_games<10;return `<div class="userRankRow"><div class="rankNo">#${i+1}</div><div class="rankPlayer">${r.id===goatId?'🐐 ':''}${esc(r.username)}${prov?'<span class="provisionalTag">PROV</span>':''}</div><div class="rankRecord">${r.wins}-${r.losses}</div><div class="rankRating">${r.rating}</div></div>`}).join(''):'<div class="rankEmpty">No ranked users yet.</div>';
+  }
   return;
  }
 
- const stats=loadLegendStats();let rows=[];
+ if(mode==='upsets'){
+  const {data,error}=await sb.rpc('get_daily_upsets',{p_day:day,p_limit:10});
+  if(error){rankError(error);return}
+  const rows=data||[];document.getElementById('rankSummaryText').textContent='Top 10 upsets today';
+  document.getElementById('rankNote').textContent='Global ranked games only. Lower pregame winner probability ranks higher.';
+  list.innerHTML=rows.length?rows.map((r,i)=>`<div class="upsetRow"><div class="upsetTop"><span>#${i+1} ${esc(r.winner)} over ${esc(r.loser)}</span><span>${Math.round(Number(r.winner_chance)*100)}%</span></div><div class="upsetSub">${r.winner_score}-${r.loser_score} • played by ${esc(r.username)}</div></div>`).join(''):'<div class="rankEmpty">No qualifying upsets today yet.</div>';
+  return;
+ }
+
+ let rows=[];
  if(mode==='today'){
-  for(const name of GVG_ROSTER){
-   if(rankingPosition!=='ALL'&&GVG_POSITIONS[name]!==rankingPosition)continue;
-   const d=stats[name]?.daily?.[date]||{wins:0,losses:0,rating:1500},games=d.wins+d.losses;
-   if(games)rows.push({name,pos:GVG_POSITIONS[name],wins:d.wins,losses:d.losses,rating:d.rating||1500,games});
-  }
-  rows.sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
-  const posLabel=rankingPosition==='ALL'?'':` ${rankingPosition}`;
-  document.getElementById('rankSummaryText').textContent=`Today's${posLabel} GOAT board`;
-  document.getElementById('rankNote').textContent=rankingPosition==='ALL'
-   ?"Today's GOAT is the #1 daily Elo player. The board resets each day; W-L remains visible."
-   :`Highest-ranked ${rankingPosition} today by daily Elo. Primary positions are used for GOAT-by-position boards.`;
+  const {data,error}=await sb.from('legend_daily_stats').select('player,wins,losses,rating,games,points_for,points_against').eq('game_day',day).gt('games',0).order('rating',{ascending:false}).order('wins',{ascending:false});
+  if(error){rankError(error);return}
+  rows=(data||[]).filter(r=>rankingPosition==='ALL'||GVG_POSITIONS[r.player]===rankingPosition);
+  document.getElementById('rankSummaryText').textContent=`Today's${rankingPosition==='ALL'?'':' '+rankingPosition} GOAT board`;
+  document.getElementById('rankNote').textContent=rankingPosition==='ALL'?"Today's GOAT is the #1 global daily Elo player. The board resets at 00:00 UTC.":`Highest-ranked ${rankingPosition} today by global daily Elo.`;
  }else{
-  rows=GVG_ROSTER
-   .filter(name=>rankingPosition==='ALL'||GVG_POSITIONS[name]===rankingPosition)
-   .map(name=>{
-    const s=stats[name]||defaultLegendStat();
-    const games=(s.wins||0)+(s.losses||0);
-    const margin=games?((s.pointsFor||0)-(s.pointsAgainst||0))/games:0;
-    return {name,pos:GVG_POSITIONS[name],wins:s.wins||0,losses:s.losses||0,rating:s.rating||1500,margin};
-   });
-  rows.sort((a,b)=>b.rating-a.rating||b.wins-a.wins);
+  const {data,error}=await sb.from('legend_alltime_stats').select('player,wins,losses,rating,games,points_for,points_against').order('rating',{ascending:false}).order('wins',{ascending:false}).order('player',{ascending:true});
+  if(error){rankError(error);return}
+  rows=(data||[]).filter(r=>rankingPosition==='ALL'||GVG_POSITIONS[r.player]===rankingPosition);
   if(limit>0)rows=rows.slice(0,limit);
-  const posLabel=rankingPosition==='ALL'?'':` ${rankingPosition}`;
-  document.getElementById('rankSummaryText').textContent=limit>0&&rankingPosition==='ALL'?'All-Time Top 10':`All-time${posLabel} GOAT Elo`;
-  document.getElementById('rankNote').textContent=rankingPosition==='ALL'
-   ?'All 100 players begin at 1500 Elo. Ranked games build the all-time board; record shows W-L and average point margin.'
-   :`All-time ${rankingPosition} ranking by Elo. Each player is assigned one primary position for GOAT-by-position comparisons.`;
+  document.getElementById('rankSummaryText').textContent=limit>0&&rankingPosition==='ALL'?'All-Time Top 10':`All-time${rankingPosition==='ALL'?'':' '+rankingPosition} GOAT Elo`;
+  document.getElementById('rankNote').textContent=rankingPosition==='ALL'?'All 100 players begin at 1500 Elo. Every server-approved ranked game builds the global all-time board.':`Global all-time ${rankingPosition} ranking by Elo.`;
  }
  list.innerHTML=rows.length?rows.map((r,i)=>{
-  const rec=r.margin===undefined?`${r.wins}-${r.losses}`:`${r.wins}-${r.losses} · ${r.margin>=0?'+':''}${r.margin.toFixed(1)}`;
-  const pos=r.pos||GVG_POSITIONS[r.name]||'';
-  return `<div class="rankRow"><div class="rankNo">#${i+1}</div><div class="rankPlayer rankPlayerWrap"><span class="rankPos">${pos}</span><span class="rankPlayerName">${r.name}</span></div><div class="rankRecord">${rec}</div><div class="rankRating">${r.rating}</div></div>`;
+  const games=Number(r.games||0),margin=games?((Number(r.points_for||0)-Number(r.points_against||0))/games):0;
+  const rec=mode==='today'?`${r.wins}-${r.losses}`:`${r.wins}-${r.losses} · ${margin>=0?'+':''}${margin.toFixed(1)}`;
+  const pos=GVG_POSITIONS[r.player]||'';
+  return `<div class="rankRow"><div class="rankNo">#${i+1}</div><div class="rankPlayer rankPlayerWrap"><span class="rankPos">${pos}</span><span class="rankPlayerName">${esc(r.player)}</span></div><div class="rankRecord">${rec}</div><div class="rankRating">${r.rating}</div></div>`;
  }).join(''):'<div class="rankEmpty">No ranked games yet for this position.</div>';
 }
 
-function showPostgame(result,elig){
+async function getH2H(a,b){
+ const {data,error}=await sb.rpc('get_h2h',{p_a:a,p_b:b});if(error)return {allA:0,allB:0,todayA:0,todayB:0};
+ return {allA:Number(data?.all_a||0),allB:Number(data?.all_b||0),todayA:Number(data?.today_a||0),todayB:Number(data?.today_b||0)};
+}
+async function getLegendRanks(a,b){
+ const {data,error}=await sb.from('legend_alltime_stats').select('player,rating,wins').order('rating',{ascending:false}).order('wins',{ascending:false}).order('player',{ascending:true});
+ if(error)return {a:null,b:null};const rows=data||[];return {a:rows.findIndex(r=>r.player===a)+1||null,b:rows.findIndex(r=>r.player===b)+1||null};
+}
+
+async function showPostgame(result,elig){
  lastPostgameResult=result;
- const h=getH2H(result.userPlayer,result.cpuPlayer),user=currentUser(),accounts=loadAccounts(),acct=user?normalizeAccount(accounts[user]):null;
+ const [h,ranks,userRank]=await Promise.all([getH2H(result.userPlayer,result.cpuPlayer),getLegendRanks(result.userPlayer,result.cpuPlayer),serverProfile?getAllTimeUserRank(serverProfile.id):Promise.resolve(null)]);
  const winner=result.win?result.userPlayer:result.cpuPlayer,winnerChance=result.win?Number(result.expectedWin||.5):1-Number(result.expectedWin||.5);
- document.getElementById('postLabel').textContent=winnerChance<=.42?'UPSET FINAL':'FINAL';
- document.getElementById('postWinner').textContent=`${winner} wins`;
+ document.getElementById('postLabel').textContent=winnerChance<=.42?'UPSET FINAL':'FINAL';document.getElementById('postWinner').textContent=`${winner} wins`;
  document.getElementById('postScore').textContent=`${Math.max(result.userScore,result.cpuScore)}–${Math.min(result.userScore,result.cpuScore)}`;
- const st=document.getElementById('postStatus');st.className='postStatus '+(elig.ranked?'ranked':'unranked');
- st.textContent=elig.ranked?'✓ Ranked result':`Casual / unranked — ${elig.reason}`;
+ const st=document.getElementById('postStatus');st.className='postStatus '+(elig.ranked?'ranked':'unranked');st.textContent=elig.ranked?'✓ Ranked result':`Casual / unranked — ${elig.reason}`;
  document.getElementById('postH2H').textContent=`${result.userPlayer} ${h.allA}–${h.allB} ${result.cpuPlayer}`;
  document.getElementById('postTodayH2H').textContent=`${result.userPlayer} ${h.todayA}–${h.todayB} ${result.cpuPlayer}`;
- document.getElementById('postLegendRanks').textContent=`${result.userPlayer} #${legendRank(result.userPlayer)} • ${result.cpuPlayer} #${legendRank(result.cpuPlayer)}`;
- document.getElementById('postUserRecord').textContent=acct?`${acct.wins}-${acct.losses} • ${acct.rating} Elo • #${userRank(user)}`:'Sign in to build a ranked record';
+ document.getElementById('postLegendRanks').textContent=`${result.userPlayer} #${ranks.a||'-'} • ${result.cpuPlayer} #${ranks.b||'-'}`;
+ document.getElementById('postUserRecord').textContent=serverProfile?`${serverProfile.wins}-${serverProfile.losses} • ${serverProfile.rating} Elo • #${userRank||'-'}`:'Sign in to build a ranked record';
  const simText=result.simMode==='quick'?'Quick Sim • same possession engine, animations skipped. ':result.simMode==='skip'?'Skipped to Result • resolved from the live game state. ':'';
  document.getElementById('postExtra').textContent=simText+(winnerChance<=.42?`${winner} entered at roughly a ${Math.round(winnerChance*100)}% matchup chance.`:(result.mode==='daily'?'Daily Challenge complete. Only the first attempt can be ranked.':''));
- document.getElementById('postReplayDaily').style.display=result.mode==='daily'?'block':'none';
- document.getElementById('postgameModal').classList.add('show');
+ document.getElementById('postReplayDaily').style.display=result.mode==='daily'?'block':'none';document.getElementById('postgameModal').classList.add('show');
 }
 function closePostgame(){document.getElementById('postgameModal').classList.remove('show')}
 function postNextMatchup(){closePostgame();openGame('regular')}
 function postReplayDaily(){closePostgame();openGame('daily')}
 
-function processResult(d){
- const elig=evaluateRankEligibility(d),user=currentUser();
- if(elig.ranked){
-  updateLegendStats(d);updateH2H(d);addUpset(d,user);recordRankedGame(d);
+async function processResult(d){
+ let elig={ranked:false,reason:'Sign in to make games count toward global rankings.'};
+ if(authUser&&serverProfile){
+  const args={
+   p_match_id:String(d.matchId||''),p_user_player:d.userPlayer,p_cpu_player:d.cpuPlayer,
+   p_user_score:Number(d.userScore||0),p_cpu_score:Number(d.cpuScore||0),p_user_won:!!d.win,
+   p_expected_win:Number(d.expectedWin||.5),p_mode:d.mode||'regular',p_sim_mode:d.simMode||'watch',
+   p_rerolls:Number(d.rerolls||0),p_duration_ms:Number(d.durationMs||0)
+  };
+  const {data,error}=await sb.rpc('submit_ranked_game',args);
+  if(error)elig={ranked:false,reason:'Ranking server unavailable — this game was not counted.'};
+  else elig={ranked:!!data?.ranked,reason:data?.reason||'Server result'};
+  if(elig.ranked)await loadMyProfile();
  }
- updateProfileUI();
- if(document.getElementById('rankingsModal').classList.contains('show'))showRankings('today');
- showPostgame(d,elig);
+ await updateProfileUI();
+ if(document.getElementById('rankingsModal').classList.contains('show'))await showRankings(lastRankingMode,lastRankingLimit);
+ await showPostgame(d,elig);
 }
 
-window.addEventListener('message',e=>{
- const d=e.data||{};
- if(d.type==='goat-vs-goat-result')processResult(d);
-});
-
-function sendGameMode(mode){
- const frame=document.getElementById('gameFrame');
- try{frame.contentWindow.postMessage({type:mode==='daily'?'gvg-start-daily':'gvg-start-regular'},'*')}catch(e){}
-}
-function openGame(mode='regular'){
- document.body.classList.add('game-open');window.scrollTo(0,0);
- setTimeout(()=>sendGameMode(mode),40);
-}
+window.addEventListener('message',e=>{const d=e.data||{};if(d.type==='goat-vs-goat-result')processResult(d)});
+function sendGameMode(mode){const frame=document.getElementById('gameFrame');try{frame.contentWindow.postMessage({type:mode==='daily'?'gvg-start-daily':'gvg-start-regular'},'*')}catch(e){}}
+function openGame(mode='regular'){document.body.classList.add('game-open');window.scrollTo(0,0);setTimeout(()=>sendGameMode(mode),40)}
 function openDailyChallenge(){openGame('daily')}
 function closeGame(){document.body.classList.remove('game-open');window.scrollTo(0,0)}
 
-updateProfileUI();
+async function initConnectedBeta(){
+ try{
+  const {data,error}=await sb.auth.getSession();if(error)console.warn(error);
+  authUser=data?.session?.user||null;await loadMyProfile();await updateProfileUI();
+  sb.auth.onAuthStateChange((_event,session)=>{setTimeout(async()=>{authUser=session?.user||null;await loadMyProfile();await updateProfileUI()},0)});
+ }catch(error){console.error('Supabase init',error);await updateLandingTodayGoat()}
+}
+initConnectedBeta();
 </script>
 </body>
 </html>
