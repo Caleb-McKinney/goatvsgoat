@@ -2272,6 +2272,19 @@ async function initGame(simMode=&#x27;watch&#x27;){
  await runCoinTossAnimation(firstName,matchMeta.firstOwner);
  if(!state||state.finished)return;
 
+ // Start the background track only after the coin toss so browser audio has
+ // already been unlocked by the user's Watch Game tap. Quick Sim stays silent.
+ if(!quickSim && audioEnabled){
+  ensureAudio();
+  // A prior Quick Sim can leave the music bus effectively muted. Restore both
+  // buses explicitly before starting the watched-game soundtrack.
+  sfxEnabled=true;
+  if(audioCtx&&sfxBus)sfxBus.gain.setTargetAtTime(.42,audioCtx.currentTime,.01);
+  if(audioCtx&&musicBus)musicBus.gain.setTargetAtTime(.20,audioCtx.currentTime,.01);
+  stopMusic();
+  startMusic();
+ }
+
  if(quickSim){
   $(&#x27;status&#x27;).textContent=&#x27;SIMMING&#x27;;
   $(&#x27;commentary&#x27;).textContent=`${firstName} gets first ball. Quick Sim is resolving the matchup.`;
@@ -2687,7 +2700,7 @@ function ensureAudio(){
   musicBus=audioCtx.createGain();
   audioMaster.gain.value=.72;
   sfxBus.gain.value=.42;
-  musicBus.gain.value=.12;
+  musicBus.gain.value=.20;
   sfxBus.connect(audioMaster);musicBus.connect(audioMaster);audioMaster.connect(audioCtx.destination);
  }
  if(audioCtx.state===&#x27;suspended&#x27;)audioCtx.resume();
@@ -2887,7 +2900,7 @@ function silenceGameAudio(){
 function enableGameAudio(){
  sfxEnabled=true;
  if(audioCtx&amp;&amp;sfxBus)sfxBus.gain.setTargetAtTime(.42,audioCtx.currentTime,.02);
- if(audioCtx&amp;&amp;musicBus)musicBus.gain.setTargetAtTime(.12,audioCtx.currentTime,.02);
+ if(audioCtx&amp;&amp;musicBus)musicBus.gain.setTargetAtTime(.20,audioCtx.currentTime,.02);
  if(audioEnabled&amp;&amp;!quickSim&amp;&amp;state&amp;&amp;!state.finished)startMusic();
 }
 
