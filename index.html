@@ -795,6 +795,68 @@ footer{color:#7f8a98}
  .customRankRow{grid-template-columns:32px 1fr 54px}.customRankRow .edge{grid-column:2/4;text-align:left}
 }
 
+
+/* ===== v28.7 clean game-mode row ===== */
+.actions{
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:8px!important;
+ align-items:stretch!important;
+ max-width:100%;
+}
+.actions .modeBtn{
+ min-width:0;
+ min-height:52px;
+ border-radius:9px;
+ padding:8px 10px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:7px;
+ text-decoration:none;
+ font:inherit;
+ font-size:10px;
+ font-weight:950;
+ line-height:1.15;
+ text-align:center;
+ cursor:pointer;
+ box-sizing:border-box;
+}
+.actions .modeBtn .modeMark{
+ font-size:13px;
+ font-weight:950;
+ flex:0 0 auto;
+}
+.actions .modeRanked{
+ background:linear-gradient(180deg,#efb541,#d99b26);
+ border:1px solid #f2c76a;
+ color:#101720;
+}
+.actions .modeDaily{
+ background:#101d2d;
+ border:1px solid #d7ab5566;
+ color:#f6f1e7;
+}
+.actions .modeCustom{
+ background:#101d2d;
+ border:1px solid #4f739e;
+ color:#dcecff;
+}
+.actions .rule{
+ grid-column:1/-1;
+ display:block;
+ margin-top:2px;
+ text-align:left;
+}
+@media(max-width:620px){
+ .actions{
+  grid-template-columns:1fr!important;
+ }
+ .actions .rule{
+  grid-column:1;
+ }
+}
+
 </style>
 <meta name="description" content="GOAT Court — where basketball greatness is put on trial. Pick a legend, choose your strategy, and simulate all-time 1-on-1 matchups.">
 </head>
@@ -808,7 +870,6 @@ footer{color:#7f8a98}
 </a>
   <div class="navRight">
    <button class="dailyBtn" type="button" onclick="openDailyChallenge()">Daily</button>
-   <button class="customBtn" type="button" onclick="openCustomMatchup()">Custom</button>
    <button class="rankBtn" type="button" onclick="openRankings()">Rankings</button>
    <button id="profileButton" class="profileBtn" type="button" onclick="openAccount()">
     <span id="profileAvatar" class="avatar">?</span>
@@ -835,8 +896,9 @@ footer{color:#7f8a98}
    <div class="step"><b>3. Set your plan</b><span>Choose offense, defense, then play.</span></div>
   </div>
   <div class="actions">
-   <a class="playBtn" href="#play" onclick="openGame();return false;">▶ Start a Matchup</a>
-   <button class="dailyBtn" type="button" onclick="openDailyChallenge()">Daily GOAT Challenge</button>
+   <a class="modeBtn modeRanked" href="#play" onclick="openGame();return false;"><span class="modeMark">▶</span><span>Start Matchup</span></a>
+   <button class="modeBtn modeDaily" type="button" onclick="openDailyChallenge()"><span class="modeMark">★</span><span>Daily Challenge</span></button>
+   <button class="modeBtn modeCustom" type="button" onclick="openCustomMatchup()"><span class="modeMark">VS</span><span>Custom Matchup</span></button>
    <span class="rule">First to 11 • Win by 2 • Sign in to save your record</span>
   </div>
  </section>
