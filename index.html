@@ -2096,8 +2096,9 @@ function requestRankedPreflight(){
    pendingRankChecks.delete(requestId);
    // Fail closed: if the server cannot confirm Exhibition status, keep the
    // easter egg OFF so it can never accidentally influence a ranked result.
-   resolve({ranked:true,reason:&#x27;Ranked eligibility could not be confirmed.&#x27;});
-  },1800);
+   // Ten seconds avoids treating a slow/cold Supabase response as &quot;ranked&quot;.
+   resolve({ranked:true,reason:&#x27;Ranked eligibility check timed out.&#x27;});
+  },10000);
   pendingRankChecks.set(requestId,{resolve,timer});
   window.parent.postMessage({
    type:&#x27;gvg-ranked-preflight&#x27;,
@@ -2344,17 +2345,24 @@ async function initGame(simMode=&#x27;watch&#x27;){
  render();resetCourt();
  const firstName=matchMeta.firstBall;
  $(&#x27;gamePanel&#x27;).scrollIntoView({behavior:&#x27;auto&#x27;});
- $(&#x27;status&#x27;).textContent=&#x27;COIN TOSS&#x27;;
- $(&#x27;commentary&#x27;).textContent=&#x27;Flipping for first possession…&#x27;;
 
- await runCoinTossAnimation(firstName,matchMeta.firstOwner);
- if(!state||state.finished)return;
-
+ // Resolve ranked-vs-Exhibition status BEFORE tipoff. This is intentionally
+ // awaited before the coin toss/game loop so the horn hotspot is already in
+ // the correct state when the first possession begins.
  if(!quickSim&amp;&amp;gameMode===&#x27;regular&#x27;){
+  $(&#x27;status&#x27;).textContent=&#x27;CHECKING MATCH STATUS&#x27;;
+  $(&#x27;commentary&#x27;).textContent=&#x27;Confirming whether this matchup is Ranked or Exhibition…&#x27;;
   const rankCheck=await rankedPreflightPromise;
+  if(!state||state.finished)return;
   parentMatchRanked=rankCheck?.ranked!==false;
   parentRankCheckReason=String(rankCheck?.reason||&#x27;&#x27;);
+  updateHornsHint();
  }
+
+ $(&#x27;status&#x27;).textContent=&#x27;COIN TOSS&#x27;;
+ $(&#x27;commentary&#x27;).textContent=&#x27;Flipping for first possession…&#x27;;
+ await runCoinTossAnimation(firstName,matchMeta.firstOwner);
+ if(!state||state.finished)return;
 
  // Start the background track only after the coin toss so browser audio has
  // already been unlocked by the user&#x27;s Watch Game tap. Quick Sim stays silent.
@@ -4153,23 +4161,28 @@ async function handleRankedPreflight(d){
 
  // If the server-side preflight is unavailable, fail closed and treat the
  // matchup as potentially ranked. That hides the easter egg rather than ever
- // allowing it to influence an official result.
+ // allowing it to influence an official result. Retry once because a cold
+ // Supabase request can occasionally be slower/fail transiently on mobile.
  let ranked=true,reason='Ranked eligibility could not be confirmed.';
- try{
-  const {data,error}=await sb.rpc('get_ranked_game_eligibility',{
-   p_user_player:String(d.userPlayer||''),
-   p_cpu_player:String(d.cpuPlayer||''),
-   p_mode:String(d.mode||'regular'),
-   p_sim_mode:String(d.simMode||'watch'),
-   p_rerolls:Number(d.rerolls||0)
-  });
-  if(!error&&data){
-   ranked=data.ranked!==false;
-   reason=String(data.reason||'');
-  }else if(error){
-   console.warn('ranked preflight',error);
-  }
- }catch(error){console.warn('ranked preflight',error)}
+ const args={
+  p_user_player:String(d.userPlayer||''),
+  p_cpu_player:String(d.cpuPlayer||''),
+  p_mode:String(d.mode||'regular'),
+  p_sim_mode:String(d.simMode||'watch'),
+  p_rerolls:Number(d.rerolls||0)
+ };
+ for(let attempt=0;attempt<2;attempt++){
+  try{
+   const {data,error}=await sb.rpc('get_ranked_game_eligibility',args);
+   if(!error&&data){
+    ranked=data.ranked!==false;
+    reason=String(data.reason||'');
+    break;
+   }
+   if(error)console.warn('ranked preflight',attempt+1,error);
+  }catch(error){console.warn('ranked preflight',attempt+1,error)}
+  if(attempt===0)await new Promise(r=>setTimeout(r,250));
+ }
 
  frame.contentWindow.postMessage({
   type:'gvg-ranked-preflight-result',requestId,ranked,reason
