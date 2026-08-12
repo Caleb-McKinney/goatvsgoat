@@ -2080,35 +2080,19 @@ const P=[{&quot;name&quot;:&quot;Kareem Abdul-Jabbar&quot;,&quot;ovr&quot;:98,&q
 const $=id=&gt;document.getElementById(id);
 let cpu=null,you=null,state=null,careerW=0,careerL=0,streak=0,loopToken=0,busy=false;
 let cpuBag=[],gameMode=&#x27;regular&#x27;,currentOptions=[],selectionRerolls=0,matchMeta=null,quickSim=false,parentRankedAccount=false;
-let parentMatchRanked=true,parentRankCheckReason=&#x27;&#x27;,rankCheckSeq=0;
-const pendingRankChecks=new Map();
+let parentLoggedIn=false,parentHornsAvailable=false,hornClaimSeq=0;
+const pendingHornClaims=new Map();
 
-function requestRankedPreflight(){
- // The easter egg may only appear when the CURRENT regular matchup is already
- // guaranteed to be Exhibition. A signed-in account alone is not enough:
- // server anti-farming limits can make one specific matchup unranked.
- if(gameMode!==&#x27;regular&#x27;||quickSim)return Promise.resolve({ranked:true,reason:&#x27;Not an Exhibition Watch game.&#x27;});
- if(selectionRerolls&gt;0)return Promise.resolve({ranked:false,reason:&#x27;Rerolled matchup — Exhibition.&#x27;});
- if(!parentRankedAccount)return Promise.resolve({ranked:false,reason:&#x27;Guest / unranked Exhibition.&#x27;});
- const requestId=`rank-${Date.now()}-${++rankCheckSeq}`;
+function claimDailyHorns(){
+ if(!parentLoggedIn||!parentHornsAvailable)return Promise.resolve({claimed:false,available:false});
+ const requestId=`horn-${Date.now()}-${++hornClaimSeq}`;
  return new Promise(resolve=&gt;{
   const timer=setTimeout(()=&gt;{
-   pendingRankChecks.delete(requestId);
-   // Fail closed: if the server cannot confirm Exhibition status, keep the
-   // easter egg OFF so it can never accidentally influence a ranked result.
-   // Ten seconds avoids treating a slow/cold Supabase response as &quot;ranked&quot;.
-   resolve({ranked:true,reason:&#x27;Ranked eligibility check timed out.&#x27;});
-  },10000);
-  pendingRankChecks.set(requestId,{resolve,timer});
-  window.parent.postMessage({
-   type:&#x27;gvg-ranked-preflight&#x27;,
-   requestId,
-   userPlayer:you?.name||&#x27;&#x27;,
-   cpuPlayer:cpu?.name||&#x27;&#x27;,
-   mode:gameMode,
-   simMode:&#x27;watch&#x27;,
-   rerolls:selectionRerolls
-  },&#x27;*&#x27;);
+   pendingHornClaims.delete(requestId);
+   resolve({claimed:false,available:parentHornsAvailable,reason:&#x27;Daily horn claim timed out.&#x27;});
+  },7000);
+  pendingHornClaims.set(requestId,{resolve,timer});
+  window.parent.postMessage({type:&#x27;gvg-claim-daily-horns&#x27;,requestId},&#x27;*&#x27;);
  });
 }
 
@@ -2313,11 +2297,6 @@ async function initGame(simMode=&#x27;watch&#x27;){
  document.body.classList.add(&#x27;game-active&#x27;);
  stopLoop();busy=false;ballInFlight=false;
  quickSim=simMode===&#x27;quick&#x27;;
- // Start the server eligibility check immediately. The coin-toss animation
- // gives it time to resolve without adding a visible loading step.
- const rankedPreflightPromise=(!quickSim&amp;&amp;gameMode===&#x27;regular&#x27;)
-  ? requestRankedPreflight()
-  : Promise.resolve({ranked:true,reason:&#x27;Easter egg disabled in this mode.&#x27;});
  if(!quickSim){ensureAudio();enableGameAudio()}else{silenceGameAudio();}
  matchMeta={
   matchId:makeMatchId(),
@@ -2331,7 +2310,7 @@ async function initGame(simMode=&#x27;watch&#x27;){
  const firstOwner=Math.random()&lt;.5?0:1;
  matchMeta.firstOwner=firstOwner;
  matchMeta.firstBall=firstOwner===0?you.name:cpu.name;
- state={score:[0,0],fgm:[0,0],fga:[0,0],reb:[0,0],oreb:[0,0],stl:[0,0],blk:[0,0],energy:[100,100],heat:[0,0],actionHistory:[{},{}],hornsUsed:false,hornsPending:false,hornsAutoJordanLeBron:false,owner:firstOwner,paused:false,finished:false,timeoutUsed:false,coords:{blue:{x:220,y:370},red:{x:270,y:335},ball:{x:228,y:360}}};
+ state={score:[0,0],fgm:[0,0],fga:[0,0],reb:[0,0],oreb:[0,0],stl:[0,0],blk:[0,0],energy:[100,100],heat:[0,0],actionHistory:[{},{}],hornsUsed:false,hornsPending:false,hornsAutoJordanLeBron:false,hornsClaiming:false,owner:firstOwner,paused:false,finished:false,timeoutUsed:false,coords:{blue:{x:220,y:370},red:{x:270,y:335},ball:{x:228,y:360}}};
  $(&#x27;pickPanel&#x27;).classList.add(&#x27;hidden&#x27;);$(&#x27;matchupPanel&#x27;).classList.add(&#x27;hidden&#x27;);$(&#x27;gamePanel&#x27;).classList.remove(&#x27;hidden&#x27;);
  $(&#x27;blueName&#x27;).textContent=you.name;$(&#x27;redName&#x27;).textContent=cpu.name;$(&#x27;blueStatName&#x27;).textContent=you.name;$(&#x27;redStatName&#x27;).textContent=cpu.name;
  configureAvatar(0,you);configureAvatar(1,cpu);
@@ -2346,18 +2325,6 @@ async function initGame(simMode=&#x27;watch&#x27;){
  const firstName=matchMeta.firstBall;
  $(&#x27;gamePanel&#x27;).scrollIntoView({behavior:&#x27;auto&#x27;});
 
- // Resolve ranked-vs-Exhibition status BEFORE tipoff. This is intentionally
- // awaited before the coin toss/game loop so the horn hotspot is already in
- // the correct state when the first possession begins.
- if(!quickSim&amp;&amp;gameMode===&#x27;regular&#x27;){
-  $(&#x27;status&#x27;).textContent=&#x27;CHECKING MATCH STATUS&#x27;;
-  $(&#x27;commentary&#x27;).textContent=&#x27;Confirming whether this matchup is Ranked or Exhibition…&#x27;;
-  const rankCheck=await rankedPreflightPromise;
-  if(!state||state.finished)return;
-  parentMatchRanked=rankCheck?.ranked!==false;
-  parentRankCheckReason=String(rankCheck?.reason||&#x27;&#x27;);
-  updateHornsHint();
- }
 
  $(&#x27;status&#x27;).textContent=&#x27;COIN TOSS&#x27;;
  $(&#x27;commentary&#x27;).textContent=&#x27;Flipping for first possession…&#x27;;
@@ -2378,7 +2345,7 @@ async function initGame(simMode=&#x27;watch&#x27;){
  }
 
  if(!quickSim){
-  const autoHorns=armJordanLeBronEasterEgg();
+  const autoHorns=await armJordanLeBronEasterEgg();
   if(!autoHorns)updateHornsHint();
  }
 
@@ -3509,36 +3476,16 @@ function recordActionResult(index,act,points){
 
 
 
-function matchupIsExhibition(){
- if(!state||quickSim)return false;
- // Custom has its own community H2H/rankings, so the goat easter egg is
- // deliberately disabled there too. Daily is always excluded.
- if(gameMode!==&#x27;regular&#x27;)return false;
- return selectionRerolls&gt;0||!parentRankedAccount||parentMatchRanked===false;
-}
 function isJordanLeBronMatchup(){
  if(!you||!cpu)return false;
  const names=new Set([you.name,cpu.name]);
  return names.has(&#x27;Michael Jordan&#x27;)&amp;&amp;names.has(&#x27;LeBron James&#x27;);
 }
-function jordanLeBronEasterEggEligible(){
- // Automatic Jordan-vs-LeBron surprise follows the same strict rule as the
- // clickable version: regular Watch games that are confirmed Exhibition only.
- return matchupIsExhibition()&amp;&amp;isJordanLeBronMatchup()&amp;&amp;!state.hornsUsed;
-}
-function armJordanLeBronEasterEgg(){
- if(!jordanLeBronEasterEggEligible())return false;
- state.hornsPending=true;
- state.hornsAutoJordanLeBron=true;
- // No shimmer or clue here — this one is meant to surprise the player.
- $(&#x27;hornsHotspot&#x27;)?.classList.remove(&#x27;hornsAvailable&#x27;,&#x27;hornsArmed&#x27;);
- return true;
-}
-
 function hornsAllowed(){
  if(!state||state.finished||quickSim)return false;
- if(state.hornsUsed||state.hornsPending)return false;
- return matchupIsExhibition();
+ if(!parentLoggedIn||!parentHornsAvailable)return false;
+ if(state.hornsUsed||state.hornsPending||state.hornsClaiming)return false;
+ return true;
 }
 function updateHornsHint(){
  const hot=$(&#x27;hornsHotspot&#x27;);
@@ -3547,16 +3494,41 @@ function updateHornsHint(){
  hot.classList.toggle(&#x27;hornsAvailable&#x27;,allowed);
  if(!state?.hornsPending)hot.classList.remove(&#x27;hornsArmed&#x27;);
 }
-function armHorns(){
+async function consumeDailyHorn(){
+ if(!hornsAllowed())return false;
+ state.hornsClaiming=true;
+ $(&#x27;hornsHotspot&#x27;)?.classList.remove(&#x27;hornsAvailable&#x27;);
+ const result=await claimDailyHorns();
+ if(!state)return false;
+ state.hornsClaiming=false;
+ parentHornsAvailable=!!result?.available;
+ if(result?.claimed){
+  parentHornsAvailable=false;
+  return true;
+ }
+ updateHornsHint();
+ return false;
+}
+async function armJordanLeBronEasterEgg(){
+ if(!isJordanLeBronMatchup()||!hornsAllowed())return false;
+ const claimed=await consumeDailyHorn();
+ if(!claimed)return false;
+ state.hornsPending=true;
+ state.hornsAutoJordanLeBron=true;
+ // This hidden gag consumes the same one-per-day horn use.
+ $(&#x27;hornsHotspot&#x27;)?.classList.remove(&#x27;hornsAvailable&#x27;,&#x27;hornsArmed&#x27;);
+ return true;
+}
+async function armHorns(){
  if(!hornsAllowed())return;
+ const claimed=await consumeDailyHorn();
+ if(!claimed)return;
  state.hornsPending=true;
  try{localStorage.setItem(&#x27;goatCourtHornsDiscovered&#x27;,&#x27;1&#x27;)}catch(e){}
  const hot=$(&#x27;hornsHotspot&#x27;);
  hot?.classList.remove(&#x27;hornsAvailable&#x27;);
  hot?.classList.add(&#x27;hornsArmed&#x27;);
- if(hot){
-  hot.querySelectorAll(&#x27;.hornHint&#x27;).forEach(el=&gt;el.style.opacity=&#x27;0&#x27;);
- }
+ if(hot)hot.querySelectorAll(&#x27;.hornHint&#x27;).forEach(el=&gt;el.style.opacity=&#x27;0&#x27;);
 
  // Tiny acknowledgement; still does not explain what was found.
  if(audioEnabled&amp;&amp;!quickSim){
@@ -4029,28 +4001,32 @@ $(&#x27;next&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{
 });
 window.addEventListener(&#x27;message&#x27;,e=&gt;{
  const d=e.data||{};
- if(d.type===&#x27;gvg-ranked-preflight-result&#x27;){
-  const pending=pendingRankChecks.get(String(d.requestId||&#x27;&#x27;));
+ if(d.type===&#x27;gvg-daily-horns-claim-result&#x27;){
+  const pending=pendingHornClaims.get(String(d.requestId||&#x27;&#x27;));
   if(pending){
    clearTimeout(pending.timer);
-   pendingRankChecks.delete(String(d.requestId||&#x27;&#x27;));
-   pending.resolve({ranked:d.ranked!==false,reason:String(d.reason||&#x27;&#x27;)});
+   pendingHornClaims.delete(String(d.requestId||&#x27;&#x27;));
+   pending.resolve({
+    claimed:!!d.claimed,
+    available:!!d.available,
+    reason:String(d.reason||&#x27;&#x27;)
+   });
   }
   return;
  }
  if(d.type===&#x27;gvg-start-daily&#x27;){
-  parentRankedAccount=!!d.rankedAccount;
-  parentMatchRanked=true;parentRankCheckReason=&#x27;&#x27;;
+  parentLoggedIn=!!d.loggedIn;
+  parentHornsAvailable=!!d.hornsAvailable;
   newRoll(&#x27;daily&#x27;,true);window.scrollTo(0,0)
  }
  if(d.type===&#x27;gvg-start-regular&#x27;){
-  parentRankedAccount=!!d.rankedAccount;
-  parentMatchRanked=parentRankedAccount;parentRankCheckReason=&#x27;&#x27;;
+  parentLoggedIn=!!d.loggedIn;
+  parentHornsAvailable=!!d.hornsAvailable;
   newRoll(&#x27;regular&#x27;,true);window.scrollTo(0,0)
  }
  if(d.type===&#x27;gvg-start-custom&#x27;){
-  parentRankedAccount=false;
-  parentMatchRanked=false;parentRankCheckReason=&#x27;Custom Court is never easter-egg eligible.&#x27;;
+  parentLoggedIn=!!d.loggedIn;
+  parentHornsAvailable=!!d.hornsAvailable;
   startCustomMatchup(String(d.userPlayer||&#x27;&#x27;),String(d.cpuPlayer||&#x27;&#x27;));window.scrollTo(0,0)
  }
 });
@@ -4143,50 +4119,6 @@ function backendMessage(error){
  const text=String(error?.message||error||'');
  if(/relation .* does not exist|schema cache|could not find the table|PGRST205|42P01/i.test(text))return 'GOAT Court database setup is not complete yet.';
  return text||'The ranking server is unavailable right now.';
-}
-
-async function handleRankedPreflight(d){
- const frame=document.getElementById('gameFrame');
- const requestId=String(d?.requestId||'');
- if(!frame?.contentWindow||!requestId)return;
-
- // Guests and the internal test profile are already guaranteed unranked.
- if(!authUser||!serverProfile||demoMode){
-  frame.contentWindow.postMessage({
-   type:'gvg-ranked-preflight-result',requestId,ranked:false,
-   reason:demoMode?'Test profile — Exhibition only.':'Guest game — Exhibition.'
-  },'*');
-  return;
- }
-
- // If the server-side preflight is unavailable, fail closed and treat the
- // matchup as potentially ranked. That hides the easter egg rather than ever
- // allowing it to influence an official result. Retry once because a cold
- // Supabase request can occasionally be slower/fail transiently on mobile.
- let ranked=true,reason='Ranked eligibility could not be confirmed.';
- const args={
-  p_user_player:String(d.userPlayer||''),
-  p_cpu_player:String(d.cpuPlayer||''),
-  p_mode:String(d.mode||'regular'),
-  p_sim_mode:String(d.simMode||'watch'),
-  p_rerolls:Number(d.rerolls||0)
- };
- for(let attempt=0;attempt<2;attempt++){
-  try{
-   const {data,error}=await sb.rpc('get_ranked_game_eligibility',args);
-   if(!error&&data){
-    ranked=data.ranked!==false;
-    reason=String(data.reason||'');
-    break;
-   }
-   if(error)console.warn('ranked preflight',attempt+1,error);
-  }catch(error){console.warn('ranked preflight',attempt+1,error)}
-  if(attempt===0)await new Promise(r=>setTimeout(r,250));
- }
-
- frame.contentWindow.postMessage({
-  type:'gvg-ranked-preflight-result',requestId,ranked,reason
- },'*');
 }
 
 async function loadMyProfile(){
@@ -4871,14 +4803,64 @@ function closePostgame(){document.getElementById('postgameModal').classList.remo
 function postNextMatchup(){closePostgame();if(lastPostgameResult?.mode==='custom'){closeGame();openCustomMatchup()}else openGame('regular')}
 function postReplayDaily(){closePostgame();openGame('daily')}
 
+
+let dailyHornsAvailableCache=null;
+let dailyHornsDayCache='';
+
+async function getDailyHornsAvailability(force=false){
+ if(!authUser||!serverProfile||demoMode)return false;
+ const day=utcDateKey();
+ if(!force&&dailyHornsDayCache===day&&dailyHornsAvailableCache!==null){
+  return !!dailyHornsAvailableCache;
+ }
+ try{
+  const {data,error}=await sb.rpc('get_daily_horns_status');
+  if(error)throw error;
+  dailyHornsDayCache=String(data?.game_day||day);
+  dailyHornsAvailableCache=!!data?.available;
+  return dailyHornsAvailableCache;
+ }catch(error){
+  console.warn('daily horns status',error);
+  dailyHornsDayCache=day;
+  dailyHornsAvailableCache=false;
+  return false;
+ }
+}
+
+async function handleDailyHornsClaim(d){
+ const frame=document.getElementById('gameFrame');
+ const requestId=String(d?.requestId||'');
+ if(!frame?.contentWindow||!requestId)return;
+
+ let claimed=false,available=false,reason='';
+ if(!authUser||!serverProfile||demoMode){
+  reason='Sign in to use Give ’Em the Horns.';
+ }else{
+  try{
+   const {data,error}=await sb.rpc('claim_daily_horns');
+   if(error)throw error;
+   claimed=!!data?.claimed;
+   available=!!data?.available;
+   reason=String(data?.reason||'');
+   dailyHornsDayCache=String(data?.game_day||utcDateKey());
+   dailyHornsAvailableCache=available;
+  }catch(error){
+   console.warn('daily horns claim',error);
+   reason='Daily horn claim could not be confirmed.';
+   dailyHornsAvailableCache=false;
+  }
+ }
+
+ frame.contentWindow.postMessage({
+  type:'gvg-daily-horns-claim-result',
+  requestId,claimed,available,reason
+ },'*');
+}
+
 async function processResult(d){
  let elig={ranked:false,reason:'Sign in to make games count toward global rankings.'};
 
- // Defense in depth: Custom Court has community H2H/rankings, so a result
- // containing the Exhibition-only goat easter egg is never recorded there.
- if(d.mode==='custom'&&d.hornsUsed){
-  elig={custom:true,accepted:false,reason:'Custom result not recorded — the goat easter egg is Exhibition-only.'};
- }else if(d.mode==='custom'){
+ if(d.mode==='custom'){
   if(!authUser||!serverProfile){
    const u=guestCustomUsage();
    const guestLimit=3+guestCustomBonus();
@@ -4924,17 +4906,13 @@ async function processResult(d){
    p_match_id:String(d.matchId||''),p_user_player:d.userPlayer,p_cpu_player:d.cpuPlayer,
    p_user_score:Number(d.userScore||0),p_cpu_score:Number(d.cpuScore||0),p_user_won:!!d.win,
    p_expected_win:Number(d.expectedWin||.5),p_mode:d.mode||'regular',p_sim_mode:d.simMode||'watch',
-   // If the Exhibition-only easter egg fired, force the existing server RPC
-   // down its unranked path as a final safety net. The preflight should have
-   // already guaranteed this matchup was Exhibition.
-   p_rerolls:d.hornsUsed?Math.max(1,Number(d.rerolls||0)):Number(d.rerolls||0),
+   p_rerolls:Number(d.rerolls||0),
    p_duration_ms:Number(d.durationMs||0)
   };
   const {data,error}=await sb.rpc('submit_ranked_game',args);
   if(error)elig={ranked:false,reason:'Ranking server unavailable — this game was not counted.'};
   else{
    elig={ranked:!!data?.ranked,reason:data?.reason||'Server result'};
-   if(d.hornsUsed)elig={ranked:false,reason:'Exhibition easter egg used — result kept out of official rankings.'};
   }
   await Promise.all([loadMyProfile(),loadMyCustomSummary()]);
   if(elig.ranked)await loadMyRewards();
@@ -4945,15 +4923,28 @@ async function processResult(d){
 }
 window.addEventListener('message',e=>{
  const d=e.data||{};
- if(d.type==='gvg-ranked-preflight')handleRankedPreflight(d);
+ if(d.type==='gvg-claim-daily-horns')handleDailyHornsClaim(d);
  if(d.type==='goat-vs-goat-result')processResult(d);
  if(d.type==='gvg-custom-next'){closeGame();openCustomMatchup()}
 });
-function sendGameMode(mode,opts={}){const frame=document.getElementById('gameFrame');try{
- const rankedAccount=!!(authUser&&serverProfile&&!demoMode);
- if(mode==='custom')frame.contentWindow.postMessage({type:'gvg-start-custom',userPlayer:opts.userPlayer,cpuPlayer:opts.cpuPlayer,rankedAccount:false},'*');
- else frame.contentWindow.postMessage({type:mode==='daily'?'gvg-start-daily':'gvg-start-regular',rankedAccount},'*');
-}catch(e){}}
+async function sendGameMode(mode,opts={}){
+ const frame=document.getElementById('gameFrame');
+ try{
+  const loggedIn=!!(authUser&&serverProfile&&!demoMode);
+  const hornsAvailable=loggedIn?await getDailyHornsAvailability(true):false;
+  if(mode==='custom'){
+   frame.contentWindow.postMessage({
+    type:'gvg-start-custom',userPlayer:opts.userPlayer,cpuPlayer:opts.cpuPlayer,
+    loggedIn,hornsAvailable
+   },'*');
+  }else{
+   frame.contentWindow.postMessage({
+    type:mode==='daily'?'gvg-start-daily':'gvg-start-regular',
+    loggedIn,hornsAvailable
+   },'*');
+  }
+ }catch(e){console.warn('send game mode',e)}
+}
 function openGame(mode='regular',opts={}){document.body.classList.add('game-open');window.scrollTo(0,0);setTimeout(()=>sendGameMode(mode,opts),40)}
 function openDailyChallenge(){openGame('daily')}
 function closeGame(){document.body.classList.remove('game-open');window.scrollTo(0,0)}
@@ -4962,7 +4953,11 @@ async function initConnectedBeta(){
  try{
   const {data,error}=await sb.auth.getSession();if(error)console.warn(error);
   authUser=data?.session?.user||null;await loadMyProfile();await updateProfileUI();
-  sb.auth.onAuthStateChange((_event,session)=>{if(demoMode)return;setTimeout(async()=>{authUser=session?.user||null;await loadMyProfile();await updateProfileUI()},0)});
+  sb.auth.onAuthStateChange((_event,session)=>{if(demoMode)return;setTimeout(async()=>{
+   authUser=session?.user||null;
+   dailyHornsAvailableCache=null;dailyHornsDayCache='';
+   await loadMyProfile();await updateProfileUI()
+  },0)});
  }catch(error){console.error('Supabase init',error);await updateLandingTodayGoat()}
 }
 initConnectedBeta();
