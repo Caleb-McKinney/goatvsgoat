@@ -2080,6 +2080,36 @@ const P=[{&quot;name&quot;:&quot;Kareem Abdul-Jabbar&quot;,&quot;ovr&quot;:98,&q
 const $=id=&gt;document.getElementById(id);
 let cpu=null,you=null,state=null,careerW=0,careerL=0,streak=0,loopToken=0,busy=false;
 let cpuBag=[],gameMode=&#x27;regular&#x27;,currentOptions=[],selectionRerolls=0,matchMeta=null,quickSim=false,parentRankedAccount=false;
+let parentMatchRanked=true,parentRankCheckReason=&#x27;&#x27;,rankCheckSeq=0;
+const pendingRankChecks=new Map();
+
+function requestRankedPreflight(){
+ // The easter egg may only appear when the CURRENT regular matchup is already
+ // guaranteed to be Exhibition. A signed-in account alone is not enough:
+ // server anti-farming limits can make one specific matchup unranked.
+ if(gameMode!==&#x27;regular&#x27;||quickSim)return Promise.resolve({ranked:true,reason:&#x27;Not an Exhibition Watch game.&#x27;});
+ if(selectionRerolls&gt;0)return Promise.resolve({ranked:false,reason:&#x27;Rerolled matchup — Exhibition.&#x27;});
+ if(!parentRankedAccount)return Promise.resolve({ranked:false,reason:&#x27;Guest / unranked Exhibition.&#x27;});
+ const requestId=`rank-${Date.now()}-${++rankCheckSeq}`;
+ return new Promise(resolve=&gt;{
+  const timer=setTimeout(()=&gt;{
+   pendingRankChecks.delete(requestId);
+   // Fail closed: if the server cannot confirm Exhibition status, keep the
+   // easter egg OFF so it can never accidentally influence a ranked result.
+   resolve({ranked:true,reason:&#x27;Ranked eligibility could not be confirmed.&#x27;});
+  },1800);
+  pendingRankChecks.set(requestId,{resolve,timer});
+  window.parent.postMessage({
+   type:&#x27;gvg-ranked-preflight&#x27;,
+   requestId,
+   userPlayer:you?.name||&#x27;&#x27;,
+   cpuPlayer:cpu?.name||&#x27;&#x27;,
+   mode:gameMode,
+   simMode:&#x27;watch&#x27;,
+   rerolls:selectionRerolls
+  },&#x27;*&#x27;);
+ });
+}
 
 function shuffleWithRng(a,rng=Math.random){
  a=[...a];
@@ -2282,6 +2312,11 @@ async function initGame(simMode=&#x27;watch&#x27;){
  document.body.classList.add(&#x27;game-active&#x27;);
  stopLoop();busy=false;ballInFlight=false;
  quickSim=simMode===&#x27;quick&#x27;;
+ // Start the server eligibility check immediately. The coin-toss animation
+ // gives it time to resolve without adding a visible loading step.
+ const rankedPreflightPromise=(!quickSim&amp;&amp;gameMode===&#x27;regular&#x27;)
+  ? requestRankedPreflight()
+  : Promise.resolve({ranked:true,reason:&#x27;Easter egg disabled in this mode.&#x27;});
  if(!quickSim){ensureAudio();enableGameAudio()}else{silenceGameAudio();}
  matchMeta={
   matchId:makeMatchId(),
@@ -2314,6 +2349,12 @@ async function initGame(simMode=&#x27;watch&#x27;){
 
  await runCoinTossAnimation(firstName,matchMeta.firstOwner);
  if(!state||state.finished)return;
+
+ if(!quickSim&amp;&amp;gameMode===&#x27;regular&#x27;){
+  const rankCheck=await rankedPreflightPromise;
+  parentMatchRanked=rankCheck?.ranked!==false;
+  parentRankCheckReason=String(rankCheck?.reason||&#x27;&#x27;);
+ }
 
  // Start the background track only after the coin toss so browser audio has
  // already been unlocked by the user&#x27;s Watch Game tap. Quick Sim stays silent.
@@ -3460,10 +3501,12 @@ function recordActionResult(index,act,points){
 
 
 
-function matchupIsUnranked(){
+function matchupIsExhibition(){
  if(!state||quickSim)return false;
- if(gameMode===&#x27;daily&#x27;)return false;
- return gameMode===&#x27;custom&#x27;||selectionRerolls&gt;0||!parentRankedAccount;
+ // Custom has its own community H2H/rankings, so the goat easter egg is
+ // deliberately disabled there too. Daily is always excluded.
+ if(gameMode!==&#x27;regular&#x27;)return false;
+ return selectionRerolls&gt;0||!parentRankedAccount||parentMatchRanked===false;
 }
 function isJordanLeBronMatchup(){
  if(!you||!cpu)return false;
@@ -3471,11 +3514,9 @@ function isJordanLeBronMatchup(){
  return names.has(&#x27;Michael Jordan&#x27;)&amp;&amp;names.has(&#x27;LeBron James&#x27;);
 }
 function jordanLeBronEasterEggEligible(){
- // Keep the automatic Jordan-vs-LeBron gag out of every ranking/stat pool
- // that represents matchup results. It only runs in regular games that are
- // definitely unranked/exhibition-style.
- const exhibitionOnly=gameMode===&#x27;regular&#x27;&amp;&amp;(selectionRerolls&gt;0||!parentRankedAccount);
- return exhibitionOnly&amp;&amp;isJordanLeBronMatchup()&amp;&amp;!state.hornsUsed;
+ // Automatic Jordan-vs-LeBron surprise follows the same strict rule as the
+ // clickable version: regular Watch games that are confirmed Exhibition only.
+ return matchupIsExhibition()&amp;&amp;isJordanLeBronMatchup()&amp;&amp;!state.hornsUsed;
 }
 function armJordanLeBronEasterEgg(){
  if(!jordanLeBronEasterEggEligible())return false;
@@ -3489,7 +3530,7 @@ function armJordanLeBronEasterEgg(){
 function hornsAllowed(){
  if(!state||state.finished||quickSim)return false;
  if(state.hornsUsed||state.hornsPending)return false;
- return matchupIsUnranked();
+ return matchupIsExhibition();
 }
 function updateHornsHint(){
  const hot=$(&#x27;hornsHotspot&#x27;);
@@ -3980,16 +4021,28 @@ $(&#x27;next&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{
 });
 window.addEventListener(&#x27;message&#x27;,e=&gt;{
  const d=e.data||{};
+ if(d.type===&#x27;gvg-ranked-preflight-result&#x27;){
+  const pending=pendingRankChecks.get(String(d.requestId||&#x27;&#x27;));
+  if(pending){
+   clearTimeout(pending.timer);
+   pendingRankChecks.delete(String(d.requestId||&#x27;&#x27;));
+   pending.resolve({ranked:d.ranked!==false,reason:String(d.reason||&#x27;&#x27;)});
+  }
+  return;
+ }
  if(d.type===&#x27;gvg-start-daily&#x27;){
   parentRankedAccount=!!d.rankedAccount;
+  parentMatchRanked=true;parentRankCheckReason=&#x27;&#x27;;
   newRoll(&#x27;daily&#x27;,true);window.scrollTo(0,0)
  }
  if(d.type===&#x27;gvg-start-regular&#x27;){
   parentRankedAccount=!!d.rankedAccount;
+  parentMatchRanked=parentRankedAccount;parentRankCheckReason=&#x27;&#x27;;
   newRoll(&#x27;regular&#x27;,true);window.scrollTo(0,0)
  }
  if(d.type===&#x27;gvg-start-custom&#x27;){
   parentRankedAccount=false;
+  parentMatchRanked=false;parentRankCheckReason=&#x27;Custom Court is never easter-egg eligible.&#x27;;
   startCustomMatchup(String(d.userPlayer||&#x27;&#x27;),String(d.cpuPlayer||&#x27;&#x27;));window.scrollTo(0,0)
  }
 });
@@ -4082,6 +4135,45 @@ function backendMessage(error){
  const text=String(error?.message||error||'');
  if(/relation .* does not exist|schema cache|could not find the table|PGRST205|42P01/i.test(text))return 'GOAT Court database setup is not complete yet.';
  return text||'The ranking server is unavailable right now.';
+}
+
+async function handleRankedPreflight(d){
+ const frame=document.getElementById('gameFrame');
+ const requestId=String(d?.requestId||'');
+ if(!frame?.contentWindow||!requestId)return;
+
+ // Guests and the internal test profile are already guaranteed unranked.
+ if(!authUser||!serverProfile||demoMode){
+  frame.contentWindow.postMessage({
+   type:'gvg-ranked-preflight-result',requestId,ranked:false,
+   reason:demoMode?'Test profile — Exhibition only.':'Guest game — Exhibition.'
+  },'*');
+  return;
+ }
+
+ // If the server-side preflight is unavailable, fail closed and treat the
+ // matchup as potentially ranked. That hides the easter egg rather than ever
+ // allowing it to influence an official result.
+ let ranked=true,reason='Ranked eligibility could not be confirmed.';
+ try{
+  const {data,error}=await sb.rpc('get_ranked_game_eligibility',{
+   p_user_player:String(d.userPlayer||''),
+   p_cpu_player:String(d.cpuPlayer||''),
+   p_mode:String(d.mode||'regular'),
+   p_sim_mode:String(d.simMode||'watch'),
+   p_rerolls:Number(d.rerolls||0)
+  });
+  if(!error&&data){
+   ranked=data.ranked!==false;
+   reason=String(data.reason||'');
+  }else if(error){
+   console.warn('ranked preflight',error);
+  }
+ }catch(error){console.warn('ranked preflight',error)}
+
+ frame.contentWindow.postMessage({
+  type:'gvg-ranked-preflight-result',requestId,ranked,reason
+ },'*');
 }
 
 async function loadMyProfile(){
@@ -4769,7 +4861,11 @@ function postReplayDaily(){closePostgame();openGame('daily')}
 async function processResult(d){
  let elig={ranked:false,reason:'Sign in to make games count toward global rankings.'};
 
- if(d.mode==='custom'){
+ // Defense in depth: Custom Court has community H2H/rankings, so a result
+ // containing the Exhibition-only goat easter egg is never recorded there.
+ if(d.mode==='custom'&&d.hornsUsed){
+  elig={custom:true,accepted:false,reason:'Custom result not recorded — the goat easter egg is Exhibition-only.'};
+ }else if(d.mode==='custom'){
   if(!authUser||!serverProfile){
    const u=guestCustomUsage();
    const guestLimit=3+guestCustomBonus();
@@ -4815,11 +4911,18 @@ async function processResult(d){
    p_match_id:String(d.matchId||''),p_user_player:d.userPlayer,p_cpu_player:d.cpuPlayer,
    p_user_score:Number(d.userScore||0),p_cpu_score:Number(d.cpuScore||0),p_user_won:!!d.win,
    p_expected_win:Number(d.expectedWin||.5),p_mode:d.mode||'regular',p_sim_mode:d.simMode||'watch',
-   p_rerolls:Number(d.rerolls||0),p_duration_ms:Number(d.durationMs||0)
+   // If the Exhibition-only easter egg fired, force the existing server RPC
+   // down its unranked path as a final safety net. The preflight should have
+   // already guaranteed this matchup was Exhibition.
+   p_rerolls:d.hornsUsed?Math.max(1,Number(d.rerolls||0)):Number(d.rerolls||0),
+   p_duration_ms:Number(d.durationMs||0)
   };
   const {data,error}=await sb.rpc('submit_ranked_game',args);
   if(error)elig={ranked:false,reason:'Ranking server unavailable — this game was not counted.'};
-  else elig={ranked:!!data?.ranked,reason:data?.reason||'Server result'};
+  else{
+   elig={ranked:!!data?.ranked,reason:data?.reason||'Server result'};
+   if(d.hornsUsed)elig={ranked:false,reason:'Exhibition easter egg used — result kept out of official rankings.'};
+  }
   await Promise.all([loadMyProfile(),loadMyCustomSummary()]);
   if(elig.ranked)await loadMyRewards();
  }
@@ -4829,6 +4932,7 @@ async function processResult(d){
 }
 window.addEventListener('message',e=>{
  const d=e.data||{};
+ if(d.type==='gvg-ranked-preflight')handleRankedPreflight(d);
  if(d.type==='goat-vs-goat-result')processResult(d);
  if(d.type==='gvg-custom-next'){closeGame();openCustomMatchup()}
 });
